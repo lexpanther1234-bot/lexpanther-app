@@ -1,38 +1,111 @@
-.App {
-  text-align: center;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  background: #0a0a0a;
+  font-family: sans-serif;
+  color: #fff;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app {
+  max-width: 390px;
+  margin: 0 auto;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
-
-.App-link {
-  color: #61dafb;
+.nav {
+  background: #0a0a0a;
+  padding: 16px;
+  border-bottom: 1px solid #222;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+.logo-accent {
+  color: #1D9E75;
+}
+.brand-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #0a0a0a;
+  overflow-x: auto;
+}
+.brand-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.brand-pill.active {
+  background: #1D9E75;
+  color: #fff;
+  border-color: #1D9E75;
+}
+.content {
+  flex: 1;
+  padding: 16px;
+  background: #111;
+}
+.section-title {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.news-card {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid #222;
+}
+.news-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #1D9E75;
+  color: #fff;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+.news-tag.blue {
+  background: #185FA5;
+}
+.news-title {
+  font-size: 13px;
+  color: #eee;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.news-meta {
+  font-size: 11px;
+  color: #555;
+}
+.tab-bar {
+  display: flex;
+  background: #0a0a0a;
+  border-top: 1px solid #222;
+  padding: 10px 0;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: #555;
+  padding: 4px;
+}
+.tab.active {
+  color: #1D9E75;
+  font-weight: bold;
 }
