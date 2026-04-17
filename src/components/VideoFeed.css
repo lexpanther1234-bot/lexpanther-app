@@ -1,0 +1,259 @@
+.video-feed {
+  padding: 0 0 24px;
+}
+
+.feed-section-title {
+  color: #00ff88;
+  font-size: 16px;
+  letter-spacing: 2px;
+  margin: 0 0 14px;
+  font-weight: 700;
+}
+
+/* ── 検索インプット ── */
+.search-input {
+  width: 100%;
+  background: #111111;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: #00ff88;
+}
+
+.search-input::placeholder {
+  color: #444444;
+}
+
+/* ── メーカー・機種セレクト ── */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 120px;
+  background: #111111;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #cccccc;
+  font-size: 13px;
+  padding: 8px 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.filter-select:focus {
+  border-color: #00ff88;
+}
+
+.filter-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.filter-select option {
+  background: #111111;
+  color: #e8e8e8;
+}
+
+/* ── タグボタン ── */
+.tag-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.tag-btn {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
+}
+
+.tag-btn:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.tag-btn.active {
+  background: #00ff88;
+  color: #000000;
+  border-color: #00ff88;
+  font-weight: 600;
+}
+
+/* ── 件数・空状態 ── */
+.result-count {
+  color: #444444;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.result-count span {
+  color: #00cc66;
+  font-weight: 600;
+}
+
+.no-result {
+  color: #444444;
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* ── VideoCard本体（VideoCard.cssから移管可） ── */
+.video-card {
+  display: flex;
+  background: #111111;
+  border: 1px solid #1a2a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.video-card:hover {
+  border-color: #00ff88;
+}
+
+.video-thumb {
+  position: relative;
+  width: 140px;
+  min-width: 140px;
+  background: #1a1a1a;
+}
+
+.video-thumb img {
+  width: 100%;
+  height: 84px;
+  object-fit: cover;
+  display: block;
+}
+
+.video-duration {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffffff;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.video-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: #00ff88;
+  color: #000000;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+.video-info {
+  padding: 10px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.video-title {
+  color: #e8e8e8;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.video-channel {
+  color: #00cc66;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.video-dot {
+  color: #333333;
+  font-size: 10px;
+}
+
+.video-views {
+  color: #555555;
+  font-size: 11px;
+}
+
+.video-time {
+  color: #444444;
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.video-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.video-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.video-tag {
+  display: inline-block;
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  letter-spacing: 0.5px;
+}
+
+.video-maker-tag {
+  display: inline-block;
+  background: #1a1500;
+  color: #aa8800;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid #2a2000;
+  letter-spacing: 0.5px;
+}
