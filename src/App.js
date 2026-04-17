@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import VideoFeed from './components/VideoFeed';
 import ShopScreen from './components/ShopScreen';
 import CommunityScreen from './components/CommunityScreen';
@@ -6,12 +6,39 @@ import ChatScreen from './components/ChatScreen';
 import './App.css';
 
 function App() {
+  const [activeTab, setActiveTab] = useState('feed');
+
   return (
     <div className="App">
-      <VideoFeed />
-      <ShopScreen />
-      <CommunityScreen />
-      <ChatScreen />
+      <div className="app-header">
+        <span className="app-logo">LEX<span className="logo-white">PANTHER</span></span>
+      </div>
+
+      <div className="app-content">
+        {activeTab === 'feed' && <VideoFeed />}
+        {activeTab === 'shop' && <ShopScreen />}
+        {activeTab === 'community' && <CommunityScreen />}
+        {activeTab === 'chat' && <ChatScreen />}
+      </div>
+
+      <div className="tab-bar">
+        <button className={`tab ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}>
+          <span className="tab-icon">▶</span>
+          <span className="tab-label">FEED</span>
+        </button>
+        <button className={`tab ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>
+          <span className="tab-icon">🛒</span>
+          <span className="tab-label">SHOP</span>
+        </button>
+        <button className={`tab ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}>
+          <span className="tab-icon">💬</span>
+          <span className="tab-label">COMMUNITY</span>
+        </button>
+        <button className={`tab ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => setActiveTab('chat')}>
+          <span className="tab-icon">🐆</span>
+          <span className="tab-label">LEX AI</span>
+        </button>
+      </div>
     </div>
   );
 }
