@@ -1,0 +1,294 @@
+.community-screen {
+  padding: 0 0 24px;
+}
+
+.community-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.community-title {
+  font-family: 'Rajdhani', sans-serif;
+  color: #00ff88;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.new-post-btn {
+  background: #00ff88;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: opacity 0.15s;
+}
+
+.new-post-btn:hover {
+  opacity: 0.85;
+}
+
+/* ── 検索 ── */
+.community-search {
+  width: 100%;
+  background: #111;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 13px;
+  padding: 9px 12px;
+  outline: none;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.community-search:focus {
+  border-color: #00ff88;
+}
+
+.community-search::placeholder {
+  color: #444;
+}
+
+/* ── タグ ── */
+.tag-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.tag-btn {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
+}
+
+.tag-btn:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.tag-btn.active {
+  background: #00ff88;
+  color: #000;
+  border-color: #00ff88;
+  font-weight: 700;
+}
+
+/* ── 投稿カード ── */
+.post-card {
+  background: #111;
+  border: 1px solid #1a2a1a;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+
+.post-card:hover {
+  border-color: #1a3a1a;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.post-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1a2a1a;
+  border: 1px solid #1a3a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #00cc66;
+  flex-shrink: 0;
+}
+
+.post-meta {
+  flex: 1;
+}
+
+.post-username {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8e8e8;
+}
+
+.post-time {
+  font-size: 10px;
+  color: #444;
+  margin-top: 1px;
+}
+
+.post-tag-pill {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.post-body {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #1a2a1a;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* ── アクション ── */
+.post-actions {
+  display: flex;
+  gap: 14px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+  padding: 0;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.action-btn:hover {
+  color: #00cc66;
+}
+
+.action-btn.liked {
+  color: #ff4466;
+}
+
+/* ── コメント ── */
+.comment-area {
+  margin-top: 10px;
+  border-top: 1px solid #1a2a1a;
+  padding-top: 10px;
+}
+
+.comment {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comment-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1a2a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #00cc66;
+  flex-shrink: 0;
+}
+
+.comment-bubble {
+  background: #0d0d0d;
+  border-radius: 8px;
+  padding: 6px 10px;
+  flex: 1;
+}
+
+.comment-username {
+  font-size: 10px;
+  color: #00cc66;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.comment-body {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.comment-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.comment-input {
+  flex: 1;
+  background: #0d0d0d;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.comment-input:focus {
+  border-color: #00ff88;
+}
+
+.comment-input::placeholder {
+  color: #444;
+}
+
+.comment-send-btn {
+  background: #00ff88;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.comment-send-btn:hover {
+  opacity: 0.85;
+}
+
+/* ── 空状態 ── */
+.no-result {
+  color: #444;
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 0;
+}

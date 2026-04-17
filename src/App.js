@@ -1,6 +1,7 @@
 import React from 'react';
 import VideoFeed from './components/VideoFeed';
 import ShopScreen from './components/ShopScreen';
+import CommunityScreen from './components/CommunityScreen';
 import './App.css';
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
     <div className="App">
       <VideoFeed />
       <ShopScreen />
+      <CommunityScreen />
     </div>
   );
 }
