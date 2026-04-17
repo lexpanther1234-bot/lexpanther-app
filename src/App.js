@@ -2,6 +2,7 @@ import React from 'react';
 import VideoFeed from './components/VideoFeed';
 import ShopScreen from './components/ShopScreen';
 import CommunityScreen from './components/CommunityScreen';
+import ChatScreen from './components/ChatScreen';
 import './App.css';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       <VideoFeed />
       <ShopScreen />
       <CommunityScreen />
+      <ChatScreen />
     </div>
   );
 }
