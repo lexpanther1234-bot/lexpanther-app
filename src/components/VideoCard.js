@@ -14,7 +14,11 @@ const VideoCard = ({ video }) => {
         {isNew && <span className="video-badge">NEW</span>}
       </div>
       <div className="video-info">
-        <p className="video-title">{title}</p>
+        <p className="video-title"
+  dangerouslySetInnerHTML={{
+    __html: title.replace(/&#(\d+);/g, (m, c) => String.fromCharCode(c))
+  }}
+/>
         <div className="video-bottom">
           <div className="video-meta">
             <span className="video-channel">{channel}</span>
