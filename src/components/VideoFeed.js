@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import VideoCard from './VideoCard';
 import './VideoFeed.css';
 
@@ -13,79 +13,55 @@ const MAKER_MODELS = {
 
 const TAGS = ['flagship', 'camera', 'budget', 'review', 'comparison'];
 
-const mockVideos = [
-  {
-    videoId: 'abc001',
-    title: 'Samsung Galaxy S25 Ultra Full Review — Is It Worth $1,299?',
-    channel: 'MKBHD',
-    views: '4.2M views',
-    publishedAt: '2日前',
-    duration: '14:32',
-    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-    maker: 'Samsung',
-    model: 'Galaxy S25 Ultra',
-    tag: 'flagship',
-    isNew: true,
-  },
-  {
-    videoId: 'abc002',
-    title: 'OnePlus 13 vs Pixel 9 Pro — Camera Shootout in Real Conditions',
-    channel: 'Dave2D',
-    views: '1.8M views',
-    publishedAt: '5日前',
-    duration: '9:18',
-    thumbnail: 'https://img.youtube.com/vi/Lq8HnNfNaCE/mqdefault.jpg',
-    maker: 'Google',
-    model: 'Pixel 9 Pro',
-    tag: 'camera',
-    isNew: false,
-  },
-  {
-    videoId: 'abc003',
-    title: 'iPhone 16 Pro Max — 3 Months Later, Still the Best?',
-    channel: 'MrMobile',
-    views: '3.1M views',
-    publishedAt: '1週間前',
-    duration: '18:45',
-    thumbnail: 'https://img.youtube.com/vi/ydMBfyLwiRU/mqdefault.jpg',
-    maker: 'Apple',
-    model: 'iPhone 16 Pro',
-    tag: 'review',
-    isNew: false,
-  },
-  {
-    videoId: 'abc004',
-    title: 'Xiaomi 14 Ultra — The Leica Camera Phone That Changes Everything',
-    channel: 'SuperSaf TV',
-    views: '2.4M views',
-    publishedAt: '3日前',
-    duration: '21:03',
-    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-    maker: 'Xiaomi',
-    model: '14 Ultra',
-    tag: 'camera',
-    isNew: false,
-  },
-  {
-    videoId: 'abc005',
-    title: 'Samsung Galaxy A55 Review — Best Mid-Range of 2025?',
-    channel: 'GSMArena',
-    views: '680K views',
-    publishedAt: '2週間前',
-    duration: '12:20',
-    thumbnail: 'https://img.youtube.com/vi/Lq8HnNfNaCE/mqdefault.jpg',
-    maker: 'Samsung',
-    model: 'Galaxy A55',
-    tag: 'budget',
-    isNew: false,
-  },
-];
-
 const VideoFeed = () => {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [selectedMaker, setSelectedMaker] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [activeTag, setActiveTag] = useState('');
+
+  const buildQuery = () => {
+    if (selectedModel) return `${selectedModel} smartphone review`;
+    if (selectedMaker) return `${selectedMaker} smartphone review 2025`;
+    if (activeTag) return `smartphone ${activeTag} 2025`;
+    return 'flagship smartphone review 2025';
+  };
+
+  const fetchVideos = async (query) => {
+    setLoading(true);
+    try {
+      const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=10&key=${apiKey}`
+      );
+      const data = await res.json();
+      if (data.items) {
+        const formatted = data.items.map((item) => ({
+          videoId: item.id.videoId,
+          title: item.snippet.title,
+          channel: item.snippet.channelTitle,
+          views: '',
+          publishedAt: new Date(item.snippet.publishedAt).toLocaleDateString('ja-JP'),
+          duration: '',
+          thumbnail: item.snippet.thumbnails.medium.url,
+          maker: selectedMaker || '',
+          model: selectedModel || '',
+          tag: activeTag || '',
+          isNew: false,
+        }));
+        setVideos(formatted);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVideos(buildQuery());
+  }, [selectedMaker, selectedModel, activeTag]);
 
   const handleMakerChange = (e) => {
     setSelectedMaker(e.target.value);
@@ -93,18 +69,12 @@ const VideoFeed = () => {
   };
 
   const filteredVideos = useMemo(() => {
-    return mockVideos.filter((v) => {
-      const matchKeyword =
-        !keyword ||
-        v.title.toLowerCase().includes(keyword.toLowerCase()) ||
-        v.channel.toLowerCase().includes(keyword.toLowerCase()) ||
-        v.model.toLowerCase().includes(keyword.toLowerCase());
-      const matchMaker = !selectedMaker || v.maker === selectedMaker;
-      const matchModel = !selectedModel || v.model === selectedModel;
-      const matchTag = !activeTag || v.tag === activeTag;
-      return matchKeyword && matchMaker && matchModel && matchTag;
-    });
-  }, [keyword, selectedMaker, selectedModel, activeTag]);
+    if (!keyword) return videos;
+    return videos.filter((v) =>
+      v.title.toLowerCase().includes(keyword.toLowerCase()) ||
+      v.channel.toLowerCase().includes(keyword.toLowerCase())
+    );
+  }, [videos, keyword]);
 
   const modelOptions = selectedMaker ? MAKER_MODELS[selectedMaker] || [] : [];
 
@@ -127,7 +97,6 @@ const VideoFeed = () => {
             <option key={maker} value={maker}>{maker}</option>
           ))}
         </select>
-
         <select
           className="filter-select"
           value={selectedModel}
@@ -142,28 +111,17 @@ const VideoFeed = () => {
       </div>
 
       <div className="tag-row">
-        <button
-          className={`tag-btn ${activeTag === '' ? 'active' : ''}`}
-          onClick={() => setActiveTag('')}
-        >
-          ALL
-        </button>
+        <button className={`tag-btn ${activeTag === '' ? 'active' : ''}`} onClick={() => setActiveTag('')}>ALL</button>
         {TAGS.map((tag) => (
-          <button
-            key={tag}
-            className={`tag-btn ${activeTag === tag ? 'active' : ''}`}
-            onClick={() => setActiveTag(tag)}
-          >
-            {tag}
-          </button>
+          <button key={tag} className={`tag-btn ${activeTag === tag ? 'active' : ''}`} onClick={() => setActiveTag(tag)}>{tag}</button>
         ))}
       </div>
 
-      <p className="result-count">
-        <span>{filteredVideos.length}</span> 件の動画
-      </p>
+      <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
 
-      {filteredVideos.length === 0 ? (
+      {loading ? (
+        <p className="no-result">読み込み中...</p>
+      ) : filteredVideos.length === 0 ? (
         <p className="no-result">該当する動画が見つかりませんでした</p>
       ) : (
         filteredVideos.map((video) => (
