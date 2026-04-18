@@ -61,6 +61,7 @@ const VideoFeed = () => {
 
   useEffect(() => {
     fetchVideos(buildQuery());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMaker, selectedModel, activeTag]);
 
   const handleMakerChange = (e) => {
