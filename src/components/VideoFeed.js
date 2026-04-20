@@ -10,8 +10,18 @@ const MAKER_MODELS = {
   Xiaomi: ['14 Ultra', '14T Pro', 'Redmi Note 13'],
   Sony: ['Xperia 1 VI', 'Xperia 5 V'],
 };
+const CHINESE_CREATORS = [
+  'STORM影视飓风', '何同学', '科技美学', 'Geekerwan极客湾',
+];
 
-const TAGS = ['flagship', 'camera', 'budget', 'review', 'comparison'];
+const JAPANESE_CREATORS = [
+  'がじぇっとれびゅー', 'スマホ情報局', 'テックテックテック',
+];
+
+const GLOBAL_CHANNELS = [
+  'MKBHD', 'Dave2D', 'MrMobile', 'SuperSaf TV',
+];
+const TAGS = ['flagship', 'camera', 'budget', 'review', 'comparison', 'chinese', 'japanese', 'global'];
 
 const VideoFeed = () => {
   const [videos, setVideos] = useState([]);
@@ -22,11 +32,23 @@ const VideoFeed = () => {
   const [activeTag, setActiveTag] = useState('');
 
   const buildQuery = () => {
-    if (selectedModel) return `${selectedModel} smartphone review`;
-    if (selectedMaker) return `${selectedMaker} smartphone review 2025`;
-    if (activeTag) return `smartphone ${activeTag} 2025`;
-    return 'flagship smartphone review 2025';
-  };
+  if (selectedModel) return `${selectedModel} smartphone review`;
+  if (selectedMaker) return `${selectedMaker} smartphone review 2025`;
+  if (activeTag === 'chinese') {
+    const r = CHINESE_CREATORS[Math.floor(Math.random() * CHINESE_CREATORS.length)];
+    return `${r} smartphone`;
+  }
+  if (activeTag === 'japanese') {
+    const r = JAPANESE_CREATORS[Math.floor(Math.random() * JAPANESE_CREATORS.length)];
+    return `${r} スマホ`;
+  }
+  if (activeTag === 'global') {
+    const r = GLOBAL_CHANNELS[Math.floor(Math.random() * GLOBAL_CHANNELS.length)];
+    return `${r} smartphone review 2025`;
+  }
+  if (activeTag) return `smartphone ${activeTag} 2025`;
+  return 'flagship smartphone review 2025';
+};
 
   const fetchVideos = async (query) => {
     setLoading(true);
