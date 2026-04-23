@@ -18,7 +18,6 @@ import './CommunityScreen.css';
 
 const TAGS = ['review', 'question', 'deal', 'photo'];
 const SUBREDDITS = ['Android', 'iphone', 'Smartphones'];
-const YT_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 
 // ── ヘルパー ──────────────────────────────────
 const formatTime = (ts) => {
@@ -43,9 +42,7 @@ const needsTranslation = (post) =>
 const fetchRedditPosts = async () => {
   const results = await Promise.allSettled(
     SUBREDDITS.map((sub) =>
-      fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=10`, {
-        headers: { Accept: 'application/json' },
-      })
+      fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=10`)
         .then((r) => r.json())
         .then((data) =>
         (data.data?.children || []).map((child) => {
@@ -72,22 +69,33 @@ const fetchRedditPosts = async () => {
     .flatMap((r) => r.value);
 };
 
+const ytFetch = (path, params) =>
+  fetch('/api/youtube', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, params }),
+  }).then((r) => r.json());
+
 const fetchYouTubeComments = async () => {
-  if (!YT_KEY) return [];
   try {
-    const searchRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent('スマートフォン レビュー 2025')}&type=video&order=viewCount&maxResults=4&key=${YT_KEY}`
-    );
-    const searchData = await searchRes.json();
+    const searchData = await ytFetch('search', {
+      part: 'snippet',
+      q: 'スマートフォン レビュー 2025',
+      type: 'video',
+      order: 'viewCount',
+      maxResults: '4',
+    });
     if (!searchData.items) return [];
 
     const videoIds = searchData.items.map((item) => item.id.videoId);
     const commentResults = await Promise.allSettled(
       videoIds.map((videoId) =>
-        fetch(
-          `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=5&order=relevance&key=${YT_KEY}`
-        )
-          .then((r) => r.json())
+        ytFetch('commentThreads', {
+          part: 'snippet',
+          videoId,
+          maxResults: '5',
+          order: 'relevance',
+        })
           .then((data) =>
             (data.items || []).map((item) => {
               const c = item.snippet.topLevelComment.snippet;

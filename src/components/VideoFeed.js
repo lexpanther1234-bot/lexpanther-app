@@ -22,8 +22,6 @@ const DEFAULT_QUERIES = [
   'iphone review 2025',
 ];
 
-const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
-
 const formatVideo = (item, extra = {}) => ({
   videoId: item.id.videoId,
   title: item.snippet.title,
@@ -37,14 +35,13 @@ const formatVideo = (item, extra = {}) => ({
 });
 
 const fetchPage = async (query, pageToken = null) => {
-  const url = new URL('https://www.googleapis.com/youtube/v3/search');
-  url.searchParams.set('part', 'snippet');
-  url.searchParams.set('q', query);
-  url.searchParams.set('type', 'video');
-  url.searchParams.set('maxResults', '50');
-  url.searchParams.set('key', API_KEY);
-  if (pageToken) url.searchParams.set('pageToken', pageToken);
-  const res = await fetch(url.toString());
+  const params = { part: 'snippet', q: query, type: 'video', maxResults: '50' };
+  if (pageToken) params.pageToken = pageToken;
+  const res = await fetch('/api/youtube', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: 'search', params }),
+  });
   return res.json();
 };
 
