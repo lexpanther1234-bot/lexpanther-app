@@ -21,7 +21,8 @@ export default async function handler(req, res) {
       messages: messages,
     });
 
-    const sanitized = Buffer.from(bodyStr, 'utf8').toString('utf8');
+    // U+2028 (LINE SEPARATOR) と U+2029 (PARAGRAPH SEPARATOR) を除去
+    const sanitized = bodyStr.replace(/\u2028/g, ' ').replace(/\u2029/g, ' ');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
