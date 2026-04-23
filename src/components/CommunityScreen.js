@@ -21,10 +21,24 @@ const TAGS = ['review', 'question', 'deal', 'photo'];
 const SUBREDDITS = ['Android', 'iphone', 'Smartphones', 'japanphone'];
 const YT_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+// モジュールレベルの初期化失敗がコンポーネントをクラッシュさせないよう遅延初期化
+let _anthropicClient = null;
+const getAnthropicClient = () => {
+  if (!_anthropicClient) {
+    try {
+      _anthropicClient = new Anthropic({
+        apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
+        dangerouslyAllowBrowser: true,
+      });
+    } catch (e) {
+      console.warn('Anthropic SDK init failed:', e);
+    }
+  }
+  return _anthropicClient;
+};
+
+// Reddit はブラウザから直接アクセスすると CORS でブロックされるためプロキシを使用
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // ── ヘルパー ──────────────────────────────────
 const formatTime = (ts) => {
@@ -48,10 +62,11 @@ const needsTranslation = (post) =>
 // ── 外部データ取得 ────────────────────────────
 const fetchRedditPosts = async () => {
   const results = await Promise.allSettled(
-    SUBREDDITS.map((sub) =>
-      fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=8&raw_json=1`, {
-        headers: { Accept: 'application/json' },
-      })
+    SUBREDDITS.map((sub) => {
+      const redditUrl = encodeURIComponent(
+        `https://www.reddit.com/r/${sub}/hot.json?limit=8&raw_json=1`
+      );
+      return fetch(`${CORS_PROXY}${redditUrl}`)
         .then((r) => r.json())
         .then((data) =>
           (data.data?.children || []).map((child) => {
@@ -70,8 +85,8 @@ const fetchRedditPosts = async () => {
               subreddit: p.subreddit_name_prefixed,
             };
           })
-        )
-    )
+        );
+    })
   );
   return results
     .filter((r) => r.status === 'fulfilled')
@@ -268,12 +283,18 @@ const ExternalCard = ({ post }) => {
     cancelledRef.current = false;
     setTranslating(true);
     setTranslation('');
+    const client = getAnthropicClient();
+    if (!client) {
+      setTranslation('翻訳機能が利用できません（APIキー未設定）。');
+      setTranslating(false);
+      return;
+    }
     try {
       const text = [post.title, post.body]
         .filter(Boolean)
         .join('\n\n')
         .slice(0, 2000);
-      const stream = anthropic.messages.stream({
+      const stream = client.messages.stream({
         model: 'claude-opus-4-7',
         max_tokens: 1024,
         messages: [{
