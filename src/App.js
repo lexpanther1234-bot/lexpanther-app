@@ -5,14 +5,31 @@ import ShopScreen from './components/ShopScreen';
 import CommunityScreen from './components/CommunityScreen';
 import ChatScreen from './components/ChatScreen';
 import CompareScreen from './components/CompareScreen';
+import { useAuth } from './AuthContext';
 import './App.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('feed');
+  const { user, signIn, signOut } = useAuth();
   return (
     <div className="App">
       <div className="app-header">
         <span className="app-logo">LEX<span className="logo-white">PANTHER</span></span>
+        <div className="header-auth">
+          {user ? (
+            <button className="auth-btn" onClick={signOut}>
+              {user.photoURL
+                ? <img src={user.photoURL} alt="avatar" className="auth-avatar" />
+                : <span className="auth-initials">{user.displayName?.[0] ?? 'U'}</span>
+              }
+              <span className="auth-label">ログアウト</span>
+            </button>
+          ) : (
+            <button className="auth-btn" onClick={signIn}>
+              <span className="auth-label">Googleでログイン</span>
+            </button>
+          )}
+        </div>
       </div>
       <div className="app-content">
         {activeTab === 'feed' && <VideoFeed />}
