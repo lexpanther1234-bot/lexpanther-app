@@ -14,7 +14,8 @@ export default async function handler(req, res) {
   const body = {
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
-    ...req.body,
+    messages: req.body.messages,
+    system: req.body.system,
   };
 
   console.log('Sending to Anthropic:', JSON.stringify({ model: body.model, max_tokens: body.max_tokens, messageCount: body.messages?.length }));
