@@ -2,33 +2,18 @@ import React, { useState, useMemo } from 'react';
 import './CompareScreen.css';
 
 const PHONES = [
-  const PHONES = [
-  // ── 2026 ──
   { id: 's26u', name: 'Galaxy S26 Ultra', maker: 'Samsung', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: '320MP', battery: '5000mAh', charge: '60W', display: '6.9" AMOLED', weight: '220g', price: '¥199,800', scores: { overall: 98, fps: 98, camera: 99, battery: 95 } },
   { id: 's26p', name: 'Galaxy S26+', maker: 'Samsung', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: '50MP', battery: '5000mAh', charge: '45W', display: '6.7" AMOLED', weight: '195g', price: '¥169,800', scores: { overall: 93, fps: 96, camera: 91, battery: 93 } },
-  { id: 's26', name: 'Galaxy S26', maker: 'Samsung', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: '50MP', battery: '4200mAh', charge: '45W', display: '6.2" AMOLED', weight: '165g', price: '¥134,800', scores: { overall: 90, fps: 94, camera: 88, battery: 87 } },
   { id: 'xi17u', name: 'Xiaomi 17 Ultra', maker: 'Xiaomi', year: 2026, chip: 'SD 8 Elite Gen5', ram: '16GB', camera: 'Leica 1inch 50MP', battery: '6200mAh', charge: '100W', display: '6.73" AMOLED', weight: '235g', price: '¥159,800', scores: { overall: 99, fps: 97, camera: 100, battery: 99 } },
-  { id: 'xi17', name: 'Xiaomi 17', maker: 'Xiaomi', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: 'Leica 50MP', battery: '5500mAh', charge: '90W', display: '6.55" AMOLED', weight: '198g', price: '¥109,800', scores: { overall: 93, fps: 95, camera: 95, battery: 96 } },
   { id: 'op15', name: 'OnePlus 15', maker: 'OnePlus', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: 'Hasselblad 50MP', battery: '6500mAh', charge: '100W', display: '6.82" AMOLED', weight: '213g', price: '¥109,800', scores: { overall: 92, fps: 96, camera: 90, battery: 99 } },
-  // ── 2025 ──
   { id: 's25u', name: 'Galaxy S25 Ultra', maker: 'Samsung', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: '200MP', battery: '5000mAh', charge: '45W', display: '6.9" AMOLED', weight: '218g', price: '¥189,800', scores: { overall: 96, fps: 97, camera: 97, battery: 94 } },
-  { id: 's25p', name: 'Galaxy S25+', maker: 'Samsung', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: '50MP', battery: '4900mAh', charge: '45W', display: '6.7" AMOLED', weight: '190g', price: '¥159,800', scores: { overall: 91, fps: 95, camera: 90, battery: 92 } },
   { id: 'xi15u', name: 'Xiaomi 15 Ultra', maker: 'Xiaomi', year: 2025, chip: 'SD 8 Elite', ram: '16GB', camera: 'Leica 50MP', battery: '6000mAh', charge: '90W', display: '6.73" AMOLED', weight: '233g', price: '¥149,800', scores: { overall: 97, fps: 96, camera: 99, battery: 98 } },
-  { id: 'xi15p', name: 'Xiaomi 15 Pro', maker: 'Xiaomi', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: 'Leica 50MP', battery: '6100mAh', charge: '90W', display: '6.73" AMOLED', weight: '218g', price: '¥129,800', scores: { overall: 94, fps: 95, camera: 96, battery: 97 } },
   { id: 'op13', name: 'OnePlus 13', maker: 'OnePlus', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: 'Hasselblad 50MP', battery: '6000mAh', charge: '100W', display: '6.82" AMOLED', weight: '210g', price: '¥99,800', scores: { overall: 90, fps: 95, camera: 88, battery: 97 } },
-  // ── 2024 ──
   { id: 'ip16pm', name: 'iPhone 16 Pro Max', maker: 'Apple', year: 2024, chip: 'A18 Pro', ram: '8GB', camera: '48MP', battery: '4685mAh', charge: '30W', display: '6.9" OLED', weight: '227g', price: '¥198,800', scores: { overall: 95, fps: 99, camera: 96, battery: 88 } },
   { id: 'ip16p', name: 'iPhone 16 Pro', maker: 'Apple', year: 2024, chip: 'A18 Pro', ram: '8GB', camera: '48MP', battery: '3582mAh', charge: '27W', display: '6.3" OLED', weight: '199g', price: '¥159,800', scores: { overall: 93, fps: 98, camera: 95, battery: 83 } },
-  { id: 'ip16', name: 'iPhone 16', maker: 'Apple', year: 2024, chip: 'A18', ram: '8GB', camera: '48MP', battery: '3561mAh', charge: '25W', display: '6.1" OLED', weight: '170g', price: '¥124,800', scores: { overall: 88, fps: 94, camera: 88, battery: 80 } },
   { id: 'p9pxl', name: 'Pixel 9 Pro XL', maker: 'Google', year: 2024, chip: 'Tensor G4', ram: '16GB', camera: '50MP', battery: '5060mAh', charge: '37W', display: '6.8" OLED', weight: '221g', price: '¥179,800', scores: { overall: 92, fps: 89, camera: 95, battery: 93 } },
-  { id: 'p9p', name: 'Pixel 9 Pro', maker: 'Google', year: 2024, chip: 'Tensor G4', ram: '16GB', camera: '50MP', battery: '4700mAh', charge: '37W', display: '6.3" OLED', weight: '221g', price: '¥159,800', scores: { overall: 91, fps: 89, camera: 95, battery: 90 } },
-  { id: 'p9', name: 'Pixel 9', maker: 'Google', year: 2024, chip: 'Tensor G4', ram: '12GB', camera: '50MP', battery: '4700mAh', charge: '27W', display: '6.3" OLED', weight: '198g', price: '¥128,900', scores: { overall: 87, fps: 86, camera: 92, battery: 89 } },
   { id: 'xi14u', name: 'Xiaomi 14 Ultra', maker: 'Xiaomi', year: 2024, chip: 'SD 8 Gen 3', ram: '16GB', camera: 'Leica 50MP', battery: '5000mAh', charge: '90W', display: '6.73" AMOLED', weight: '229g', price: '¥139,800', scores: { overall: 93, fps: 94, camera: 98, battery: 93 } },
-  { id: 'xi14tp', name: 'Xiaomi 14T Pro', maker: 'Xiaomi', year: 2024, chip: 'Dimensity 9300+', ram: '12GB', camera: 'Leica 50MP', battery: '5000mAh', charge: '120W', display: '6.67" AMOLED', weight: '209g', price: '¥89,800', scores: { overall: 88, fps: 91, camera: 90, battery: 94 } },
-  { id: 'op12', name: 'OnePlus 12', maker: 'OnePlus', year: 2024, chip: 'SD 8 Gen 3', ram: '12GB', camera: 'Hasselblad 50MP', battery: '5400mAh', charge: '100W', display: '6.82" AMOLED', weight: '220g', price: '¥89,800', scores: { overall: 88, fps: 93, camera: 85, battery: 95 } },
   { id: 'xp1vi', name: 'Xperia 1 VI', maker: 'Sony', year: 2024, chip: 'SD 8 Gen 3', ram: '12GB', camera: '52MP', battery: '5000mAh', charge: '30W', display: '6.5" OLED', weight: '192g', price: '¥189,800', scores: { overall: 87, fps: 90, camera: 91, battery: 89 } },
-  { id: 'zfold6', name: 'Galaxy Z Fold 6', maker: 'Samsung', year: 2024, chip: 'SD 8 Gen 3', ram: '12GB', camera: '50MP', battery: '4400mAh', charge: '25W', display: '7.6" Foldable', weight: '239g', price: '¥239,800', scores: { overall: 89, fps: 93, camera: 88, battery: 82 } },
-];
 ];
 
 const RANK_TYPES = [
