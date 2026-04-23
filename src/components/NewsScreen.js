@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './NewsScreen.css';
 
 // ─────────────────────────────────────────
@@ -40,44 +40,22 @@ const RSS_SOURCES = [
 
 const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
 
-// ── 翻訳関数（Claude API）──────────────────
-const translateWithClaude = async (title, description) => {
-  const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `以下のスマートフォン記事のタイトルと概要を自然な日本語に翻訳してください。
-翻訳のみを返してください。余計な説明は不要です。
+// ── 翻訳関数（MyMemory 無料API）─────────────
+const translateText = async (text) => {
+  const res = await fetch(
+    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|ja`
+  );
+  const data = await res.json();
+  return data?.responseData?.translatedText || text;
+};
 
-フォーマット：
-タイトル：[翻訳されたタイトル]
-概要：[翻訳された概要]
-
-タイトル原文：${title}
-概要原文：${description?.replace(/<[^>]*>/g, '').slice(0, 300) || 'なし'}`,
-        },
-      ],
-    }),
-  });
-  const data = await response.json();
-  const text = data.content?.[0]?.text || '';
-  const titleMatch = text.match(/タイトル：(.+)/);
-  const descMatch = text.match(/概要：([\s\S]+)/);
-  return {
-    title: titleMatch?.[1]?.trim() || title,
-    description: descMatch?.[1]?.trim() || description,
-  };
+const translateWithMyMemory = async (title, description) => {
+  const plainDesc = (description || '').replace(/<[^>]*>/g, '').slice(0, 500);
+  const [translatedTitle, translatedDesc] = await Promise.all([
+    translateText(title),
+    plainDesc ? translateText(plainDesc) : Promise.resolve(''),
+  ]);
+  return { title: translatedTitle, description: translatedDesc };
 };
 
 // ── ニュースカード ──────────────────────────
@@ -93,7 +71,7 @@ const NewsCard = ({ item }) => {
       setExpanded(true);
       setTranslating(true);
       try {
-        const result = await translateWithClaude(item.title, item.description);
+        const result = await translateWithMyMemory(item.title, item.description);
         setTranslated(result);
       } catch (e) {
         setTranslated({ title: item.title, description: item.description });

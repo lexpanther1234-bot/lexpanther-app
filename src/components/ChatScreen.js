@@ -69,16 +69,11 @@ const ChatScreen = () => {
         .map((m) => ({ role: m.role, content: m.content }));
 
       // initメッセージはsystem promptに含まれるので除外
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.REACT_APP_ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-haiku-4-5',
           max_tokens: 1024,
           system: SYSTEM_PROMPT,
           messages: apiMessages,

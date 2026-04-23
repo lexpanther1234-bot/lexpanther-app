@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import Anthropic from '@anthropic-ai/sdk';
 import {
   collection,
   onSnapshot,
@@ -18,27 +17,8 @@ import { useAuth } from '../AuthContext';
 import './CommunityScreen.css';
 
 const TAGS = ['review', 'question', 'deal', 'photo'];
-const SUBREDDITS = ['Android', 'iphone', 'Smartphones', 'japanphone'];
+const SUBREDDITS = ['Android', 'iphone', 'Smartphones'];
 const YT_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
-
-// モジュールレベルの初期化失敗がコンポーネントをクラッシュさせないよう遅延初期化
-let _anthropicClient = null;
-const getAnthropicClient = () => {
-  if (!_anthropicClient) {
-    try {
-      _anthropicClient = new Anthropic({
-        apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
-        dangerouslyAllowBrowser: true,
-      });
-    } catch (e) {
-      console.warn('Anthropic SDK init failed:', e);
-    }
-  }
-  return _anthropicClient;
-};
-
-// Reddit はブラウザから直接アクセスすると CORS でブロックされるためプロキシを使用
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // ── ヘルパー ──────────────────────────────────
 const formatTime = (ts) => {
@@ -62,31 +42,30 @@ const needsTranslation = (post) =>
 // ── 外部データ取得 ────────────────────────────
 const fetchRedditPosts = async () => {
   const results = await Promise.allSettled(
-    SUBREDDITS.map((sub) => {
-      const redditUrl = encodeURIComponent(
-        `https://www.reddit.com/r/${sub}/hot.json?limit=8&raw_json=1`
-      );
-      return fetch(`${CORS_PROXY}${redditUrl}`)
+    SUBREDDITS.map((sub) =>
+      fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=10`, {
+        headers: { Accept: 'application/json' },
+      })
         .then((r) => r.json())
         .then((data) =>
-          (data.data?.children || []).map((child) => {
-            const p = child.data;
-            return {
-              id: `reddit_${p.id}`,
-              source: 'reddit',
-              username: `u/${p.author}`,
-              avatarInitials: p.author.slice(0, 2).toUpperCase(),
-              title: p.title,
-              body: p.selftext || '',
-              likeCount: p.score,
-              commentCount: p.num_comments,
-              createdAtMs: p.created_utc * 1000,
-              url: `https://www.reddit.com${p.permalink}`,
-              subreddit: p.subreddit_name_prefixed,
-            };
-          })
-        );
-    })
+        (data.data?.children || []).map((child) => {
+          const p = child.data;
+          return {
+            id: `reddit_${p.id}`,
+            source: 'reddit',
+            username: `u/${p.author}`,
+            avatarInitials: p.author.slice(0, 2).toUpperCase(),
+            title: p.title,
+            body: p.selftext || '',
+            likeCount: p.score,
+            commentCount: p.num_comments,
+            createdAtMs: p.created_utc * 1000,
+            url: `https://www.reddit.com${p.permalink}`,
+            subreddit: p.subreddit_name_prefixed,
+          };
+        })
+      )
+    )
   );
   return results
     .filter((r) => r.status === 'fulfilled')
@@ -97,7 +76,7 @@ const fetchYouTubeComments = async () => {
   if (!YT_KEY) return [];
   try {
     const searchRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=スマートフォン+レビュー+2025&type=video&order=viewCount&maxResults=4&key=${YT_KEY}`
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent('スマートフォン レビュー 2025')}&type=video&order=viewCount&maxResults=4&key=${YT_KEY}`
     );
     const searchData = await searchRes.json();
     if (!searchData.items) return [];
@@ -283,31 +262,19 @@ const ExternalCard = ({ post }) => {
     cancelledRef.current = false;
     setTranslating(true);
     setTranslation('');
-    const client = getAnthropicClient();
-    if (!client) {
-      setTranslation('翻訳機能が利用できません（APIキー未設定）。');
-      setTranslating(false);
-      return;
-    }
     try {
       const text = [post.title, post.body]
         .filter(Boolean)
-        .join('\n\n')
-        .slice(0, 2000);
-      const stream = client.messages.stream({
-        model: 'claude-opus-4-7',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `次のテキストを自然な日本語に翻訳してください。翻訳文のみを返してください：\n\n${text}`,
-        }],
-      });
-      stream.on('text', (delta) => {
-        if (!cancelledRef.current) {
-          setTranslation((prev) => (prev ?? '') + delta);
-        }
-      });
-      await stream.finalMessage();
+        .join(' ')
+        .slice(0, 500);
+      const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ja`
+      );
+      const data = await res.json();
+      if (!cancelledRef.current) {
+        const translated = data?.responseData?.translatedText;
+        setTranslation(translated || '翻訳結果を取得できませんでした。');
+      }
     } catch {
       if (!cancelledRef.current) {
         setTranslation('翻訳に失敗しました。しばらく経ってから再試行してください。');
@@ -451,6 +418,7 @@ const CommunityScreen = () => {
   const [redditPosts, setRedditPosts] = useState([]);
   const [ytComments, setYtComments] = useState([]);
   const [externalLoading, setExternalLoading] = useState(true);
+  const [externalError, setExternalError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState(false);
 
@@ -468,7 +436,12 @@ const CommunityScreen = () => {
     Promise.allSettled([fetchRedditPosts(), fetchYouTubeComments()]).then(
       ([redditResult, ytResult]) => {
         if (redditResult.status === 'fulfilled') setRedditPosts(redditResult.value);
+        else console.error('Reddit fetch failed:', redditResult.reason);
         if (ytResult.status === 'fulfilled') setYtComments(ytResult.value);
+        else console.error('YouTube fetch failed:', ytResult.reason);
+        const bothFailed =
+          redditResult.status === 'rejected' && ytResult.status === 'rejected';
+        if (bothFailed) setExternalError('Reddit・YouTubeの読み込みに失敗しました');
         setExternalLoading(false);
       }
     );
@@ -586,6 +559,12 @@ const CommunityScreen = () => {
             </button>
           ))}
         </div>
+      )}
+
+      {externalError && (
+        <p className="no-result" style={{ color: '#ff6644', fontSize: '11px' }}>
+          ⚠ {externalError}
+        </p>
       )}
 
       {filteredPosts.length === 0 ? (
