@@ -11,10 +11,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured' });
   }
 
+  const sanitizedMessages = req.body.messages.map((msg) => ({
+    ...msg,
+    content: typeof msg.content === 'string'
+      ? msg.content.replace(/[\u2000-\u206F\u2E00-\u2E7F]/g, ' ')
+      : msg.content,
+  }));
+
   const body = {
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
-    messages: req.body.messages,
+    messages: sanitizedMessages,
     system: req.body.system,
   };
 
