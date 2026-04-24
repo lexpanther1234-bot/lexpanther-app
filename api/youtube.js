@@ -9,6 +9,7 @@ export default async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({ error: 'YOUTUBE_API_KEY is not set' });
   }
+  const cleanKey = apiKey.trim().replace(/[^\x20-\x7E]/g, '');
 
   const { path, params } = req.body;
   if (!path) {
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
 
   const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
-  url.searchParams.set('key', apiKey);
+  url.searchParams.set('key', cleanKey);
 
   try {
     const response = await fetch(url.toString());
