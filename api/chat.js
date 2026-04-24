@@ -6,6 +6,7 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY || process.env.REACT_APP_ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
+  const cleanApiKey = apiKey.trim().replace(/[^\x20-\x7E]/g, '');
 
   try {
     const rawBody = JSON.stringify(req.body);
@@ -16,7 +17,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'x-api-key': cleanApiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
