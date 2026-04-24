@@ -365,3 +365,127 @@
 .checkout-btn:hover {
   opacity: 0.85;
 }
+
+/* ── モーダル ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cart-modal {
+  background: #111;
+  border: 1px solid #1a3a1a;
+  border-radius: 14px 14px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 390px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.cart-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cart-modal-title {
+  font-family: 'Rajdhani', sans-serif;
+  color: #00ff88;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.cart-modal-close {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.cart-item-list {
+  margin-bottom: 12px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #1a2a1a;
+}
+
+.cart-item-emoji {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 2px;
+}
+
+.cart-item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #00ff88;
+}
+
+.cart-item-remove {
+  background: none;
+  border: 1px solid #333;
+  color: #555;
+  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.cart-item-remove:hover {
+  border-color: #ff4466;
+  color: #ff4466;
+}
+
+.cart-login-prompt {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.cart-login-prompt p,
+.cart-login-text {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 14px;
+}
+
+.cart-login-btn {
+  background: #00ff88;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
