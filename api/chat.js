@@ -21,8 +21,13 @@ export default async function handler(req, res) {
       messages: messages,
     });
 
-    // U+2028 (LINE SEPARATOR) と U+2029 (PARAGRAPH SEPARATOR) を除去
-    const sanitized = bodyStr.replace(/\u2028/g, ' ').replace(/\u2029/g, ' ');
+    // 特殊Unicode文字を除去（ByteStringエラー対策）
+    const sanitized = bodyStr
+      .replace(/\u2028/g, ' ')   // LINE SEPARATOR
+      .replace(/\u2029/g, ' ')   // PARAGRAPH SEPARATOR
+      .replace(/\u2026/g, '...') // HORIZONTAL ELLIPSIS
+      .replace(/[\u2000-\u200F]/g, ' ') // 各種特殊スペース・制御文字
+      .replace(/[\uFFF0-\uFFFF]/g, ''); // 特殊用途文字
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
