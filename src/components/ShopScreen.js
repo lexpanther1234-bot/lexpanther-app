@@ -4,19 +4,16 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './ShopScreen.css';
 
-const PRODUCTS = [
-  { id: 1, name: 'Samsung Galaxy S25 Ultra', maker: 'Samsung', price: 189800, type: 'phone', emoji: '📱', spec: '6.9" / Snapdragon 8 Elite / 200MP', url: 'https://www.samsung.com/jp/smartphones/galaxy-s25-ultra/' },
-  { id: 2, name: 'iPhone 16 Pro Max', maker: 'Apple', price: 198800, type: 'phone', emoji: '📱', spec: '6.9" / A18 Pro / 48MP', url: 'https://www.apple.com/jp/shop/buy-iphone/iphone-16-pro' },
-  { id: 3, name: 'Google Pixel 9 Pro', maker: 'Google', price: 159800, type: 'phone', emoji: '📱', spec: '6.3" / Tensor G4 / 50MP', url: 'https://store.google.com/jp/product/pixel_9_pro' },
-  { id: 4, name: 'Xiaomi 14 Ultra', maker: 'Xiaomi', price: 139800, type: 'phone', emoji: '📱', spec: '6.73" / SD8 Gen3 / Leica 50MP', url: 'https://www.mi.com/global/product/xiaomi-14-ultra' },
-  { id: 5, name: 'Spigen Tough Armor', maker: 'Spigen', price: 2980, type: 'accessory', emoji: '🛡️', spec: 'iPhone 16 Pro Max対応', url: 'https://www.spigen.com/jp/' },
-  { id: 6, name: 'Anker MagGo Charger', maker: 'Anker', price: 4980, type: 'accessory', emoji: '🔋', spec: 'MagSafe対応 / 15W', url: 'https://www.ankerjapan.com/' },
-  { id: 7, name: 'Peak Design Mobile Case', maker: 'Peak Design', price: 8800, type: 'accessory', emoji: '📦', spec: 'Pixel 9 Pro対応', url: 'https://www.peakdesign.com/collections/mobile' },
-  { id: 8, name: 'Belkin ScreenForce Pro', maker: 'Belkin', price: 3480, type: 'accessory', emoji: '🔲', spec: 'Samsung S25 Ultra対応', url: 'https://www.belkin.com/jp/' },
+const ACCESSORIES = [
+  { id: 'acc-1', name: 'Spigen Tough Armor', maker: 'Spigen', price: 2980, type: 'accessory', emoji: '🛡️', spec: 'iPhone 16 Pro Max対応', url: 'https://www.spigen.com/jp/' },
+  { id: 'acc-2', name: 'Anker MagGo Charger', maker: 'Anker', price: 4980, type: 'accessory', emoji: '🔋', spec: 'MagSafe対応 / 15W', url: 'https://www.ankerjapan.com/' },
+  { id: 'acc-3', name: 'Peak Design Mobile Case', maker: 'Peak Design', price: 8800, type: 'accessory', emoji: '📦', spec: 'Pixel 9 Pro対応', url: 'https://www.peakdesign.com/collections/mobile' },
+  { id: 'acc-4', name: 'Belkin ScreenForce Pro', maker: 'Belkin', price: 3480, type: 'accessory', emoji: '🔲', spec: 'Samsung S25 Ultra対応', url: 'https://www.belkin.com/jp/' },
 ];
 
 const ShopScreen = () => {
   const { user, signIn } = useAuth();
+  const [phones, setPhones] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
   const [keyword, setKeyword] = useState('');
   const [cartItems, setCartItems] = useState([]);
@@ -25,6 +22,25 @@ const ShopScreen = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState(false);
   const [addingId, setAddingId] = useState(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'phones'), (snap) => {
+      setPhones(snap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          name: data.name,
+          maker: data.brand,
+          price: data.price || 0,
+          type: 'phone',
+          emoji: '📱',
+          spec: `${data.specs?.display || ''} / ${data.specs?.cpu || ''} / ${data.specs?.camera || ''}`,
+          url: data.shopUrl || '',
+        };
+      }));
+    });
+    return () => unsub();
+  }, []);
 
   // Firestoreカートをリアルタイム購読
   useEffect(() => {
@@ -36,15 +52,17 @@ const ShopScreen = () => {
     return () => unsub();
   }, [user]);
 
+  const allProducts = useMemo(() => [...phones, ...ACCESSORIES], [phones]);
+
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return allProducts.filter((p) => {
       if (activeTab === 'phone' && p.type !== 'phone') return false;
       if (activeTab === 'accessory' && p.type !== 'accessory') return false;
       if (activeTab === 'fav' && !favs.has(p.id)) return false;
       if (keyword && !p.name.toLowerCase().includes(keyword.toLowerCase()) && !p.maker.toLowerCase().includes(keyword.toLowerCase())) return false;
       return true;
     });
-  }, [activeTab, keyword, favs]);
+  }, [activeTab, keyword, favs, allProducts]);
 
   const addToCart = async (product) => {
     if (!user) { setLoginPrompt(true); return; }
@@ -85,7 +103,7 @@ const ShopScreen = () => {
   };
 
   const cartTotal = cartItems.reduce((sum, p) => sum + (p.price || 0), 0);
-  const compareItems = PRODUCTS.filter((p) => compareList.has(p.id));
+  const compareItems = allProducts.filter((p) => compareList.has(p.id));
 
   return (
     <div className="shop-screen">

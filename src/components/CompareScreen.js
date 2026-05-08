@@ -1,20 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 import './CompareScreen.css';
-
-const PHONES = [
-  { id: 's26u', name: 'Galaxy S26 Ultra', maker: 'Samsung', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: '320MP', battery: '5000mAh', charge: '60W', display: '6.9" AMOLED', weight: '220g', price: '¥199,800', scores: { overall: 98, fps: 98, camera: 99, battery: 95 } },
-  { id: 's26p', name: 'Galaxy S26+', maker: 'Samsung', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: '50MP', battery: '5000mAh', charge: '45W', display: '6.7" AMOLED', weight: '195g', price: '¥169,800', scores: { overall: 93, fps: 96, camera: 91, battery: 93 } },
-  { id: 'xi17u', name: 'Xiaomi 17 Ultra', maker: 'Xiaomi', year: 2026, chip: 'SD 8 Elite Gen5', ram: '16GB', camera: 'Leica 1inch 50MP', battery: '6200mAh', charge: '100W', display: '6.73" AMOLED', weight: '235g', price: '¥159,800', scores: { overall: 99, fps: 97, camera: 100, battery: 99 } },
-  { id: 'op15', name: 'OnePlus 15', maker: 'OnePlus', year: 2026, chip: 'SD 8 Elite Gen5', ram: '12GB', camera: 'Hasselblad 50MP', battery: '6500mAh', charge: '100W', display: '6.82" AMOLED', weight: '213g', price: '¥109,800', scores: { overall: 92, fps: 96, camera: 90, battery: 99 } },
-  { id: 's25u', name: 'Galaxy S25 Ultra', maker: 'Samsung', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: '200MP', battery: '5000mAh', charge: '45W', display: '6.9" AMOLED', weight: '218g', price: '¥189,800', scores: { overall: 96, fps: 97, camera: 97, battery: 94 } },
-  { id: 'xi15u', name: 'Xiaomi 15 Ultra', maker: 'Xiaomi', year: 2025, chip: 'SD 8 Elite', ram: '16GB', camera: 'Leica 50MP', battery: '6000mAh', charge: '90W', display: '6.73" AMOLED', weight: '233g', price: '¥149,800', scores: { overall: 97, fps: 96, camera: 99, battery: 98 } },
-  { id: 'op13', name: 'OnePlus 13', maker: 'OnePlus', year: 2025, chip: 'SD 8 Elite', ram: '12GB', camera: 'Hasselblad 50MP', battery: '6000mAh', charge: '100W', display: '6.82" AMOLED', weight: '210g', price: '¥99,800', scores: { overall: 90, fps: 95, camera: 88, battery: 97 } },
-  { id: 'ip16pm', name: 'iPhone 16 Pro Max', maker: 'Apple', year: 2024, chip: 'A18 Pro', ram: '8GB', camera: '48MP', battery: '4685mAh', charge: '30W', display: '6.9" OLED', weight: '227g', price: '¥198,800', scores: { overall: 95, fps: 99, camera: 96, battery: 88 } },
-  { id: 'ip16p', name: 'iPhone 16 Pro', maker: 'Apple', year: 2024, chip: 'A18 Pro', ram: '8GB', camera: '48MP', battery: '3582mAh', charge: '27W', display: '6.3" OLED', weight: '199g', price: '¥159,800', scores: { overall: 93, fps: 98, camera: 95, battery: 83 } },
-  { id: 'p9pxl', name: 'Pixel 9 Pro XL', maker: 'Google', year: 2024, chip: 'Tensor G4', ram: '16GB', camera: '50MP', battery: '5060mAh', charge: '37W', display: '6.8" OLED', weight: '221g', price: '¥179,800', scores: { overall: 92, fps: 89, camera: 95, battery: 93 } },
-  { id: 'xi14u', name: 'Xiaomi 14 Ultra', maker: 'Xiaomi', year: 2024, chip: 'SD 8 Gen 3', ram: '16GB', camera: 'Leica 50MP', battery: '5000mAh', charge: '90W', display: '6.73" AMOLED', weight: '229g', price: '¥139,800', scores: { overall: 93, fps: 94, camera: 98, battery: 93 } },
-  { id: 'xp1vi', name: 'Xperia 1 VI', maker: 'Sony', year: 2024, chip: 'SD 8 Gen 3', ram: '12GB', camera: '52MP', battery: '5000mAh', charge: '30W', display: '6.5" OLED', weight: '192g', price: '¥189,800', scores: { overall: 87, fps: 90, camera: 91, battery: 89 } },
-];
 
 const RANK_TYPES = [
   { id: 'overall', label: '総合' },
@@ -24,14 +11,14 @@ const RANK_TYPES = [
 ];
 
 const SPEC_ROWS = [
-  { label: 'チップ', key: 'chip' },
-  { label: 'RAM', key: 'ram' },
-  { label: 'カメラ', key: 'camera' },
-  { label: 'バッテリー', key: 'battery' },
+  { label: 'チップ', key: 'cpu', isSpec: true },
+  { label: 'RAM', key: 'ram', isSpec: true },
+  { label: 'カメラ', key: 'camera', isSpec: true },
+  { label: 'バッテリー', key: 'battery', isSpec: true },
   { label: '充電速度', key: 'charge' },
-  { label: 'ディスプレイ', key: 'display' },
+  { label: 'ディスプレイ', key: 'display', isSpec: true },
   { label: '重量', key: 'weight' },
-  { label: '価格', key: 'price' },
+  { label: '価格', key: 'price', isPrice: true },
   { label: '総合スコア', key: 'overall', isScore: true },
   { label: 'ゲームスコア', key: 'fps', isScore: true },
   { label: 'カメラスコア', key: 'camera', isScore: true },
@@ -69,21 +56,43 @@ const Stars = ({ count }) => (
   </div>
 );
 
+const getSpecValue = (phone, row) => {
+  if (row.isScore) return phone.scores?.[row.key];
+  if (row.isSpec) return phone.specs?.[row.key];
+  if (row.isPrice) return `¥${(phone.price || 0).toLocaleString()}`;
+  return phone[row.key];
+};
+
 const CompareScreen = () => {
+  const [phones, setPhones] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('ranking');
   const [activeRankType, setActiveRankType] = useState('overall');
-  const [selectedPhones, setSelectedPhones] = useState([PHONES[0], PHONES[4], PHONES[11]]);
+  const [selectedPhones, setSelectedPhones] = useState([]);
   const [showSelector, setShowSelector] = useState(false);
   const [selectorSlot, setSelectorSlot] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [reviewPhoneId, setReviewPhoneId] = useState('s25u');
 
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'phones'), (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setPhones(data);
+      if (data.length > 0 && selectedPhones.length === 0) {
+        setSelectedPhones(data.slice(0, 3));
+      }
+      setLoading(false);
+    });
+    return () => unsub();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const sortedRanking = useMemo(() =>
-    [...PHONES].sort((a, b) => b.scores[activeRankType] - a.scores[activeRankType]).slice(0, 10),
-    [activeRankType]
+    [...phones].sort((a, b) => (b.scores?.[activeRankType] || 0) - (a.scores?.[activeRankType] || 0)).slice(0, 10),
+    [activeRankType, phones]
   );
 
-  const reviewPhone = PHONES.find(p => p.id === reviewPhoneId) || PHONES[0];
+  const reviewPhone = phones.find(p => p.id === reviewPhoneId) || phones[0];
   const reviews = getReviews(reviewPhoneId);
 
   const handleSlotClick = (index) => {
@@ -110,12 +119,16 @@ const CompareScreen = () => {
     setSelectedPhones(selectedPhones.filter((_, i) => i !== index));
   };
 
-  const filteredPhones = PHONES.filter(p =>
+  const filteredPhones = phones.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.maker.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.brand || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const rankClass = (i) => ['rank-gold', 'rank-silver', 'rank-bronze', 'rank-other'][i] || 'rank-other';
+
+  if (loading) {
+    return <div className="compare-screen"><h2 className="compare-title">⚖ Compare</h2><p style={{ color: '#555', textAlign: 'center' }}>読み込み中...</p></div>;
+  }
 
   return (
     <div className="compare-screen">
@@ -139,12 +152,12 @@ const CompareScreen = () => {
               <div className={`rank-num ${rankClass(i)}`}>{i + 1}</div>
               <div className="rank-info">
                 <div className="rank-name">{phone.name}</div>
-                <div className="rank-maker">{phone.maker} · {phone.year}</div>
+                <div className="rank-maker">{phone.brand} · {phone.releaseYear}</div>
               </div>
               <div className="rank-score-wrap">
-                <div className="rank-score">{phone.scores[activeRankType]}</div>
+                <div className="rank-score">{phone.scores?.[activeRankType]}</div>
                 <div className="rank-score-label">SCORE</div>
-                <div className="score-bar"><div className="score-fill" style={{ width: `${phone.scores[activeRankType]}%` }} /></div>
+                <div className="score-bar"><div className="score-fill" style={{ width: `${phone.scores?.[activeRankType] || 0}%` }} /></div>
               </div>
             </div>
           ))}
@@ -162,7 +175,7 @@ const CompareScreen = () => {
                     <button className="slot-remove" onClick={(e) => removePhone(i, e)}>×</button>
                     <div className="slot-emoji">📱</div>
                     <div className="slot-name">{selectedPhones[i].name}</div>
-                    <div className="slot-maker">{selectedPhones[i].maker}</div>
+                    <div className="slot-maker">{selectedPhones[i].brand}</div>
                   </>
                 ) : (
                   <>
@@ -185,13 +198,13 @@ const CompareScreen = () => {
                 </thead>
                 <tbody>
                   {SPEC_ROWS.map(row => {
-                    const vals = selectedPhones.map(p => row.isScore ? p.scores[row.key] : p[row.key]);
+                    const vals = selectedPhones.map(p => getSpecValue(p, row));
                     const best = row.isScore ? Math.max(...vals.map(Number)) : null;
                     return (
                       <tr key={row.label}>
                         <td className="spec-label">{row.label}</td>
                         {selectedPhones.map((p, i) => {
-                          const val = row.isScore ? p.scores[row.key] : p[row.key];
+                          const val = getSpecValue(p, row);
                           const isBest = row.isScore && Number(val) === best;
                           return <td key={p.id} className={isBest ? 'spec-best' : ''}>{val}</td>;
                         })}
@@ -205,10 +218,10 @@ const CompareScreen = () => {
         </div>
       )}
 
-      {activeSection === 'reviews' && (
+      {activeSection === 'reviews' && reviewPhone && (
         <div>
           <select className="review-select" value={reviewPhoneId} onChange={e => setReviewPhoneId(e.target.value)}>
-            {PHONES.map(p => <option key={p.id} value={p.id}>{p.name} — {p.maker} ({p.year})</option>)}
+            {phones.map(p => <option key={p.id} value={p.id}>{p.name} — {p.brand} ({p.releaseYear})</option>)}
           </select>
 
           <div className="review-phone-header">
@@ -217,7 +230,7 @@ const CompareScreen = () => {
               {RANK_TYPES.map(t => (
                 <div key={t.id} className="rsb">
                   <span className="rsb-label">{t.label}</span>
-                  <span className="rsb-score">{reviewPhone.scores[t.id]}</span>
+                  <span className="rsb-score">{reviewPhone.scores?.[t.id]}</span>
                 </div>
               ))}
             </div>
@@ -265,9 +278,9 @@ const CompareScreen = () => {
                   <div key={phone.id} className={`selector-item ${alreadySelected ? 'already-selected' : ''}`} onClick={() => !alreadySelected && handlePhoneSelect(phone)}>
                     <div>
                       <div className="selector-item-name">{phone.name}</div>
-                      <div className="selector-item-meta">{phone.maker} · {phone.year} · {phone.price}</div>
+                      <div className="selector-item-meta">{phone.brand} · {phone.releaseYear} · ¥{(phone.price || 0).toLocaleString()}</div>
                     </div>
-                    <div className="selector-item-score">{phone.scores.overall}</div>
+                    <div className="selector-item-score">{phone.scores?.overall}</div>
                   </div>
                 );
               })}
