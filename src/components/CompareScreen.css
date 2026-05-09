@@ -136,9 +136,7 @@
 
 /* Reddit reviews */
 .reddit-section { margin-bottom: 14px; }
-.reddit-btn { background: linear-gradient(135deg, #1a0d0d, #2a1a0d); border: 1px solid #ff4500; color: #ff6633; font-size: 12px; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Noto Sans JP', sans-serif; width: 100%; transition: all 0.15s; }
-.reddit-btn:hover { background: #ff4500; color: #fff; }
-.reddit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.reddit-loading { color: #ff6633; font-size: 12px; text-align: center; padding: 16px 0; }
 .reddit-posts { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .reddit-post { display: block; background: #111; border: 1px solid #2a1a1a; border-radius: 8px; padding: 10px; cursor: pointer; transition: border-color 0.15s; }
 .reddit-post:hover { border-color: #ff4500; }

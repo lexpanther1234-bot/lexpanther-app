@@ -118,6 +118,7 @@ const CompareScreen = () => {
   // Reddit reviews
   const [redditPosts, setRedditPosts] = useState([]);
   const [redditLoading, setRedditLoading] = useState(false);
+  const [redditError, setRedditError] = useState(false);
 
   // Likes
   const [likes, setLikes] = useState({});
@@ -207,6 +208,7 @@ const CompareScreen = () => {
   useEffect(() => {
     setAiReview('');
     setRedditPosts([]);
+    setRedditError(false);
     setExpandedReddit(new Set());
     setExpandedYouTube(new Set());
     setShowSpecModal(false);
@@ -357,20 +359,39 @@ const CompareScreen = () => {
     }
   }, [reviewPhone]);
 
-  const fetchRedditReviews = useCallback(async () => {
-    if (!reviewPhone) return;
-    setRedditLoading(true);
+  // Auto-fetch Reddit reviews when phone changes
+  useEffect(() => {
+    if (!reviewPhoneId || phones.length === 0) return;
+    const phone = phones.find(p => p.id === reviewPhoneId);
+    if (!phone) return;
+
     setRedditPosts([]);
-    try {
-      const res = await fetch(`/api/reddit?q=${encodeURIComponent(reviewPhone.name)}`);
-      const data = await res.json();
-      setRedditPosts(data.posts || []);
-    } catch {
-      setRedditPosts([]);
-    } finally {
-      setRedditLoading(false);
-    }
-  }, [reviewPhone]);
+    setRedditLoading(true);
+    setRedditError(false);
+    let cancelled = false;
+
+    const fetchReddit = async () => {
+      try {
+        const res = await fetch(`/api/reddit?q=${encodeURIComponent(phone.name)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setRedditPosts(data.posts || []);
+        }
+      } catch (err) {
+        console.error('Reddit fetch failed:', err);
+        if (!cancelled) {
+          setRedditPosts([]);
+          setRedditError(true);
+        }
+      } finally {
+        if (!cancelled) setRedditLoading(false);
+      }
+    };
+
+    fetchReddit();
+    return () => { cancelled = true; };
+  }, [reviewPhoneId, phones]);
 
   const toggleRedditExpand = (id) => {
     setExpandedReddit(prev => {
@@ -633,15 +654,15 @@ const CompareScreen = () => {
 
           {/* Reddit consumer reviews */}
           <div className="reddit-section">
-            <button className="reddit-btn" onClick={fetchRedditReviews} disabled={redditLoading}>
-              {redditLoading ? '検索中...' : '🔍 Redditで消費者レビューを検索'}
-            </button>
-            {redditPosts.length > 0 && (
+            <div className="reviews-section-title">🔍 消費者レビュー（Reddit）</div>
+            {redditLoading ? (
+              <p className="reddit-loading">Redditから取得中...</p>
+            ) : redditPosts.length > 0 ? (
               <div className="reddit-posts">
                 {redditPosts.map(p => (
                   <div key={p.id} className={`reddit-post ${expandedReddit.has(p.id) ? 'expanded' : ''}`} onClick={() => toggleRedditExpand(p.id)}>
                     <div className="reddit-post-header">
-                      <span className="reddit-sub">{p.subreddit}</span>
+                      <span className="reddit-sub">r/{p.subreddit}</span>
                       <span className="reddit-score">▲ {p.score}</span>
                     </div>
                     <div className="reddit-post-title">{p.title}</div>
@@ -656,6 +677,10 @@ const CompareScreen = () => {
                   </div>
                 ))}
               </div>
+            ) : redditError ? (
+              <p className="no-result">Redditの取得に失敗しました。しばらくしてから再度お試しください。</p>
+            ) : (
+              <p className="no-result">関連するReddit投稿が見つかりませんでした</p>
             )}
           </div>
 

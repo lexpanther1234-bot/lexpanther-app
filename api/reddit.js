@@ -1,33 +1,41 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { q } = req.query;
-  if (!q) return res.status(400).json({ error: 'Missing query parameter "q"' });
+  if (!q) return res.status(400).json({ error: 'query required' });
 
-  try {
-    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q + ' review')}&sort=relevance&limit=10&restrict_sr=false`;
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'LexPanther/1.0' },
-    });
-    const data = await response.json();
-    const posts = (data?.data?.children || [])
-      .filter(c => c.data && !c.data.over_18)
-      .map(c => ({
-        id: c.data.id,
-        title: c.data.title,
-        subreddit: c.data.subreddit_name_prefixed,
-        score: c.data.score,
+  const subs = ['Android', 'smartphones', 'iphone'];
+  const results = [];
+
+  for (const sub of subs) {
+    try {
+      const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=top&limit=2&restrict_sr=1&t=year`;
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'LexPanther/1.0 (web app; review aggregator)',
+        },
+      });
+
+      if (!response.ok) continue;
+
+      const data = await response.json();
+      const posts = (data.data?.children || []).map(c => ({
+        id:          c.data.id,
+        subreddit:   c.data.subreddit,
+        author:      c.data.author,
+        title:       c.data.title,
+        selftext:    c.data.selftext || '',
+        score:       c.data.score,
         numComments: c.data.num_comments,
-        url: `https://www.reddit.com${c.data.permalink}`,
-        selftext: (c.data.selftext || '').slice(0, 300),
-        created: c.data.created_utc,
+        permalink:   c.data.permalink,
       }));
-    return res.status(200).json({ posts });
-  } catch (err) {
-    console.error('Reddit API error:', err.message);
-    return res.status(500).json({ error: err.message });
+      results.push(...posts);
+    } catch (err) {
+      console.error(`Reddit fetch error for r/${sub}:`, err.message);
+    }
   }
+
+  return res.status(200).json({ posts: results.slice(0, 6) });
 }
