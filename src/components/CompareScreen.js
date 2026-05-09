@@ -360,30 +360,39 @@ const CompareScreen = () => {
   }, [reviewPhone]);
 
   // Auto-fetch Reddit reviews when phone changes
+  // CommunityScreenと同じクライアント直接fetch方式
   useEffect(() => {
     if (!reviewPhoneId || phones.length === 0) return;
     const phone = phones.find(p => p.id === reviewPhoneId);
     if (!phone) return;
 
     setRedditPosts([]);
-    setRedditLoading(true);
     setRedditError(false);
+    setRedditLoading(true);
     let cancelled = false;
 
     const fetchReddit = async () => {
       try {
-        const res = await fetch(`/api/reddit?q=${encodeURIComponent(phone.name)}`);
+        const q = encodeURIComponent(phone.name);
+        const res = await fetch(
+          `https://www.reddit.com/search.json?q=${q}&sort=top&limit=8&t=all`,
+          { headers: { 'Accept': 'application/json' } }
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!cancelled) {
-          setRedditPosts(data.posts || []);
-        }
+        const posts = (data.data?.children || []).map(c => ({
+          id:          c.data.id,
+          subreddit:   c.data.subreddit,
+          author:      c.data.author,
+          title:       c.data.title,
+          selftext:    c.data.selftext || '',
+          score:       c.data.score,
+          numComments: c.data.num_comments,
+        }));
+        if (!cancelled) setRedditPosts(posts.slice(0, 5));
       } catch (err) {
-        console.error('Reddit fetch failed:', err);
-        if (!cancelled) {
-          setRedditPosts([]);
-          setRedditError(true);
-        }
+        console.error('Reddit fetch error:', err);
+        if (!cancelled) setRedditError(true);
       } finally {
         if (!cancelled) setRedditLoading(false);
       }
