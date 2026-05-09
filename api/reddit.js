@@ -3,57 +3,82 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { q } = req.query;
+  const { q, after, page } = req.query;
   if (!q) return res.status(400).json({ error: 'query required' });
 
-  const errors = [];
-
-  // Attempt 1: old.reddit.com
   try {
-    const url1 = `https://old.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`;
-    const r1 = await fetch(url1, {
+    // Reddit RSS はJSON APIと違いデータセンターIPをブロックしない
+    const count = page ? (parseInt(page, 10) - 1) * 10 : 0;
+    let url = `https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`;
+    if (count > 0) url += `&count=${count}`;
+    if (after) url += `&after=${encodeURIComponent(after)}`;
+
+    const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; LexPanther/1.0)',
-        'Accept': 'application/json',
+        'Accept': 'application/atom+xml',
       },
     });
-    if (r1.ok) {
-      const data = await r1.json();
-      const posts = (data.data?.children || []).slice(0, 5).map(c => ({
-        id: c.data.id, subreddit: c.data.subreddit, author: c.data.author,
-        title: c.data.title, selftext: c.data.selftext || '',
-        score: c.data.score, numComments: c.data.num_comments,
-      }));
-      if (posts.length > 0) return res.status(200).json({ posts, source: 'old.reddit' });
-    }
-    errors.push(`old.reddit: HTTP ${r1.status}`);
-  } catch (e) {
-    errors.push(`old.reddit: ${e.message}`);
-  }
 
-  // Attempt 2: www.reddit.com with browser UA
-  try {
-    const url2 = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`;
-    const r2 = await fetch(url2, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8',
-      },
-    });
-    if (r2.ok) {
-      const data = await r2.json();
-      const posts = (data.data?.children || []).slice(0, 5).map(c => ({
-        id: c.data.id, subreddit: c.data.subreddit, author: c.data.author,
-        title: c.data.title, selftext: c.data.selftext || '',
-        score: c.data.score, numComments: c.data.num_comments,
-      }));
-      if (posts.length > 0) return res.status(200).json({ posts, source: 'www.reddit' });
+    if (!response.ok) {
+      return res.status(200).json({ posts: [], error: `HTTP ${response.status}` });
     }
-    errors.push(`www.reddit: HTTP ${r2.status}`);
-  } catch (e) {
-    errors.push(`www.reddit: ${e.message}`);
-  }
 
-  // Return debug info
-  return res.status(200).json({ posts: [], debug: errors });
+    const xml = await response.text();
+
+    // Simple XML parsing without external dependencies
+    const entries = [];
+    const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+    let match;
+    while ((match = entryRegex.exec(xml)) !== null) {
+      const entry = match[1];
+      const get = (tag) => {
+        const m = entry.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
+        return m ? m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"') : '';
+      };
+      const getAttr = (tag, attr) => {
+        const m = entry.match(new RegExp(`<${tag}[^>]*${attr}="([^"]*)"[^>]*/?>|<${tag}[^>]*${attr}="([^"]*)"[^>]*>`));
+        return m ? (m[1] || m[2] || '').replace(/&amp;/g, '&') : '';
+      };
+
+      const title = get('title');
+      const author = get('name');
+      const link = getAttr('link', 'href');
+      const content = get('content');
+      const category = getAttr('category', 'label');
+      const updated = get('updated');
+
+      // IDをリンクから生成
+      const idMatch = link.match(/comments\/([a-z0-9]+)\//);
+      const id = idMatch ? idMatch[1] : title.slice(0, 20);
+
+      // HTMLコンテンツからテキスト抽出
+      const textContent = content
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 500);
+
+      entries.push({
+        id,
+        subreddit: category.replace('r/', ''),
+        author: author.replace('/u/', ''),
+        title,
+        selftext: textContent,
+        score: 0,
+        numComments: 0,
+        link,
+        updated,
+      });
+    }
+
+    // afterトークンを取得（次ページ用）
+    // RSSにはafterがないのでエントリ数で判定
+    const hasMore = entries.length >= 10;
+
+    return res.status(200).json({ posts: entries, hasMore });
+  } catch (err) {
+    console.error('Reddit RSS error:', err.message);
+    return res.status(200).json({ posts: [], error: err.message });
+  }
 }

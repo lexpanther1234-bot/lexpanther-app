@@ -118,7 +118,10 @@ const CompareScreen = () => {
   // Reddit reviews
   const [redditPosts, setRedditPosts] = useState([]);
   const [redditLoading, setRedditLoading] = useState(false);
+  const [redditLoadingMore, setRedditLoadingMore] = useState(false);
   const [redditError, setRedditError] = useState(false);
+  const [redditPage, setRedditPage] = useState(1);
+  const [redditHasMore, setRedditHasMore] = useState(false);
 
   // Likes
   const [likes, setLikes] = useState({});
@@ -210,6 +213,8 @@ const CompareScreen = () => {
     setRedditPosts([]);
     setRedditError(false);
     setRedditTranslations({});
+    setRedditPage(1);
+    setRedditHasMore(false);
     setExpandedYouTube(new Set());
     setShowSpecModal(false);
   }, [reviewPhoneId]);
@@ -359,8 +364,7 @@ const CompareScreen = () => {
     }
   }, [reviewPhone]);
 
-  // Auto-fetch Reddit reviews when phone changes
-  // サーバーレスプロキシ経由（old.reddit.comでブロック回避）
+  // Auto-fetch Reddit reviews when phone changes (RSS経由)
   useEffect(() => {
     if (!reviewPhoneId || phones.length === 0) return;
     const phone = phones.find(p => p.id === reviewPhoneId);
@@ -369,6 +373,8 @@ const CompareScreen = () => {
     setRedditPosts([]);
     setRedditError(false);
     setRedditLoading(true);
+    setRedditPage(1);
+    setRedditHasMore(false);
     let cancelled = false;
 
     const fetchReddit = async () => {
@@ -376,7 +382,10 @@ const CompareScreen = () => {
         const res = await fetch(`/api/reddit?q=${encodeURIComponent(phone.name)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!cancelled) setRedditPosts(data.posts || []);
+        if (!cancelled) {
+          setRedditPosts(data.posts || []);
+          setRedditHasMore(data.hasMore || false);
+        }
       } catch (err) {
         console.error('Reddit fetch error:', err);
         if (!cancelled) setRedditError(true);
@@ -388,6 +397,28 @@ const CompareScreen = () => {
     fetchReddit();
     return () => { cancelled = true; };
   }, [reviewPhoneId, phones]);
+
+  // Load more Reddit posts
+  const loadMoreReddit = async () => {
+    if (!reviewPhone || redditLoadingMore) return;
+    setRedditLoadingMore(true);
+    try {
+      const nextPage = redditPage + 1;
+      const res = await fetch(`/api/reddit?q=${encodeURIComponent(reviewPhone.name)}&page=${nextPage}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const newPosts = (data.posts || []).filter(
+        np => !redditPosts.some(ep => ep.id === np.id)
+      );
+      setRedditPosts(prev => [...prev, ...newPosts]);
+      setRedditPage(nextPage);
+      setRedditHasMore(data.hasMore || false);
+    } catch (err) {
+      console.error('Reddit loadMore error:', err);
+    } finally {
+      setRedditLoadingMore(false);
+    }
+  };
 
   // Auto-translate Reddit posts to Japanese
   useEffect(() => {
@@ -681,7 +712,7 @@ const CompareScreen = () => {
                   <div key={p.id} className="reddit-post expanded">
                     <div className="reddit-post-header">
                       <span className="reddit-sub">r/{p.subreddit}</span>
-                      <span className="reddit-score">▲ {p.score}</span>
+                      <span className="reddit-score">u/{p.author}</span>
                     </div>
                     {redditTranslations[p.id] ? (
                       <>
@@ -699,11 +730,13 @@ const CompareScreen = () => {
                         {p.selftext}
                       </div>
                     )}
-                    <div className="reddit-post-meta">
-                      {p.numComments} comments · u/{p.author}
-                    </div>
                   </div>
                 ))}
+                {redditHasMore && (
+                  <button className="reddit-more-btn" onClick={loadMoreReddit} disabled={redditLoadingMore}>
+                    {redditLoadingMore ? '読み込み中...' : '他の投稿も表示する'}
+                  </button>
+                )}
               </div>
             ) : redditError ? (
               <p className="no-result">Redditの取得に失敗しました。しばらくしてから再度お試しください。</p>
