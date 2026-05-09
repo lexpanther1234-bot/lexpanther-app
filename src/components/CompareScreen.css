@@ -98,10 +98,18 @@
 .rsb-label { font-size: 9px; color: #555; }
 .rsb-score { font-size: 14px; font-weight: 700; color: #00ff88; }
 
-/* External links */
-.external-links { display: flex; gap: 8px; margin-bottom: 14px; }
-.ext-link { background: #0d1a0d; border: 1px solid #1a3a1a; color: #00cc66; font-size: 11px; padding: 6px 14px; border-radius: 8px; text-decoration: none; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; }
-.ext-link:hover { background: #00ff88; color: #000; border-color: #00ff88; }
+/* Spec detail button & modal */
+.spec-detail-actions { margin-bottom: 14px; }
+.spec-detail-btn { background: #0d1a0d; border: 1px solid #1a3a1a; color: #00cc66; font-size: 12px; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s; }
+.spec-detail-btn:hover { background: #00ff88; color: #000; border-color: #00ff88; }
+
+.spec-modal { background: #111; border: 1px solid #1a3a1a; border-radius: 16px 16px 0 0; width: 100%; max-width: 390px; max-height: 75vh; display: flex; flex-direction: column; overflow: hidden; }
+.spec-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #1a2a1a; color: #00ff88; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
+.spec-modal-body { overflow-y: auto; flex: 1; padding: 8px 12px 20px; }
+.spec-modal-table { width: 100%; border-collapse: collapse; }
+.spec-modal-table tr { border-bottom: 1px solid #1a1a1a; }
+.spec-modal-label { font-size: 11px; color: #666; padding: 8px 6px; width: 100px; }
+.spec-modal-value { font-size: 12px; color: #e8e8e8; padding: 8px 6px; font-weight: 500; }
 
 /* AI Review */
 .ai-review-section { margin-bottom: 14px; }
@@ -120,8 +128,11 @@
 .influencer-name { font-size: 12px; color: #e8e8e8; font-weight: 600; }
 .influencer-channel { font-size: 10px; color: #555; }
 .influencer-rating { background: #0d1a0d; border: 1px solid #1a3a1a; color: #00ff88; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 8px; flex-shrink: 0; }
-.influencer-link { display: inline-block; font-size: 11px; color: #00cc66; margin-top: 6px; text-decoration: none; }
-.influencer-link:hover { color: #00ff88; text-decoration: underline; }
+/* YouTube embed */
+.yt-toggle-btn { background: #1a0d0d; border: 1px solid #3a1a1a; color: #ff4444; font-size: 11px; padding: 5px 14px; border-radius: 8px; cursor: pointer; margin-top: 6px; font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s; }
+.yt-toggle-btn:hover { background: #ff4444; color: #fff; border-color: #ff4444; }
+.yt-embed-wrap { margin-top: 8px; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; }
+.yt-embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 8px; }
 
 /* Reddit reviews */
 .reddit-section { margin-bottom: 14px; }
@@ -129,13 +140,15 @@
 .reddit-btn:hover { background: #ff4500; color: #fff; }
 .reddit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .reddit-posts { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-.reddit-post { display: block; background: #111; border: 1px solid #2a1a1a; border-radius: 8px; padding: 10px; text-decoration: none; transition: border-color 0.15s; }
+.reddit-post { display: block; background: #111; border: 1px solid #2a1a1a; border-radius: 8px; padding: 10px; cursor: pointer; transition: border-color 0.15s; }
 .reddit-post:hover { border-color: #ff4500; }
+.reddit-post.expanded { border-color: #ff4500; background: #151010; }
 .reddit-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .reddit-sub { font-size: 10px; color: #ff6633; font-weight: 600; }
 .reddit-score { font-size: 10px; color: #888; }
 .reddit-post-title { font-size: 12px; color: #e8e8e8; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
 .reddit-post-text { font-size: 11px; color: #666; line-height: 1.5; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.reddit-text-expanded { -webkit-line-clamp: unset; display: block; color: #aaa; }
 .reddit-post-meta { font-size: 10px; color: #444; }
 
 /* User average scores */

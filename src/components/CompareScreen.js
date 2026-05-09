@@ -127,6 +127,15 @@ const CompareScreen = () => {
   const [userVotes, setUserVotes] = useState(new Set());
   const [votingId, setVotingId] = useState(null);
 
+  // Spec detail modal
+  const [showSpecModal, setShowSpecModal] = useState(false);
+
+  // Expanded Reddit posts
+  const [expandedReddit, setExpandedReddit] = useState(new Set());
+
+  // Expanded influencer YouTube
+  const [expandedYouTube, setExpandedYouTube] = useState(new Set());
+
   // AI Review
   const [aiReview, setAiReview] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -194,8 +203,14 @@ const CompareScreen = () => {
     return () => unsub();
   }, [reviewPhoneId, user]);
 
-  // Clear AI review & reddit on phone change
-  useEffect(() => { setAiReview(''); setRedditPosts([]); }, [reviewPhoneId]);
+  // Clear state on phone change
+  useEffect(() => {
+    setAiReview('');
+    setRedditPosts([]);
+    setExpandedReddit(new Set());
+    setExpandedYouTube(new Set());
+    setShowSpecModal(false);
+  }, [reviewPhoneId]);
 
   const brands = useMemo(() => {
     const set = new Set(phones.map(p => p.brand).filter(Boolean));
@@ -356,6 +371,28 @@ const CompareScreen = () => {
       setRedditLoading(false);
     }
   }, [reviewPhone]);
+
+  const toggleRedditExpand = (id) => {
+    setExpandedReddit(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleYouTube = (id) => {
+    setExpandedYouTube(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  };
 
   const rankClass = (i) => ['rank-gold', 'rank-silver', 'rank-bronze'][i] || 'rank-other';
 
@@ -534,10 +571,9 @@ const CompareScreen = () => {
             </div>
           </div>
 
-          {/* External review links */}
-          <div className="external-links">
-            <a className="ext-link" href={`https://www.gsmarena.com/results.php3?sQuickSearch=yes&sName=${encodeURIComponent(reviewPhone.name)}`} target="_blank" rel="noopener noreferrer">GSMArena</a>
-            <a className="ext-link" href={`https://www.notebookcheck.net/index.php?search=${encodeURIComponent(reviewPhone.name)}`} target="_blank" rel="noopener noreferrer">NotebookCheck</a>
+          {/* Spec detail button */}
+          <div className="spec-detail-actions">
+            <button className="spec-detail-btn" onClick={() => setShowSpecModal(true)}>📋 スペック詳細を見る</button>
           </div>
 
           {/* AI Review */}
@@ -557,24 +593,41 @@ const CompareScreen = () => {
           {influencerReviews.length > 0 && (
             <div>
               <div className="reviews-section-title">🎬 インフルエンサーレビュー</div>
-              {influencerReviews.map(r => (
-                <div key={r.id} className="review-card influencer-review-card">
-                  <div className="influencer-header">
-                    {r.avatarUrl && <img src={r.avatarUrl} alt="" className="influencer-avatar" />}
-                    <div className="influencer-info">
-                      <div className="influencer-name">{r.name}</div>
-                      <div className="influencer-channel">{r.platform || 'YouTube'} · {r.subscribers || ''}</div>
+              {influencerReviews.map(r => {
+                const ytId = getYouTubeId(r.url);
+                const isExpanded = expandedYouTube.has(r.id);
+                return (
+                  <div key={r.id} className="review-card influencer-review-card">
+                    <div className="influencer-header">
+                      {r.avatarUrl && <img src={r.avatarUrl} alt="" className="influencer-avatar" />}
+                      <div className="influencer-info">
+                        <div className="influencer-name">{r.name}</div>
+                        <div className="influencer-channel">{r.platform || 'YouTube'} · {r.subscribers || ''}</div>
+                      </div>
+                      <div className="influencer-rating">{r.rating}/10</div>
                     </div>
-                    <div className="influencer-rating">{r.rating}/10</div>
+                    <div className="review-text">{r.summary}</div>
+                    {ytId && (
+                      <>
+                        <button className="yt-toggle-btn" onClick={() => toggleYouTube(r.id)}>
+                          {isExpanded ? '▲ 動画を閉じる' : '▶ 動画を再生'}
+                        </button>
+                        {isExpanded && (
+                          <div className="yt-embed-wrap">
+                            <iframe
+                              className="yt-embed"
+                              src={`https://www.youtube.com/embed/${ytId}`}
+                              title={r.name}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <div className="review-text">{r.summary}</div>
-                  {r.url && (
-                    <a className="influencer-link" href={r.url} target="_blank" rel="noopener noreferrer">
-                      レビューを見る →
-                    </a>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -586,15 +639,21 @@ const CompareScreen = () => {
             {redditPosts.length > 0 && (
               <div className="reddit-posts">
                 {redditPosts.map(p => (
-                  <a key={p.id} className="reddit-post" href={p.url} target="_blank" rel="noopener noreferrer">
+                  <div key={p.id} className={`reddit-post ${expandedReddit.has(p.id) ? 'expanded' : ''}`} onClick={() => toggleRedditExpand(p.id)}>
                     <div className="reddit-post-header">
                       <span className="reddit-sub">{p.subreddit}</span>
                       <span className="reddit-score">▲ {p.score}</span>
                     </div>
                     <div className="reddit-post-title">{p.title}</div>
-                    {p.selftext && <div className="reddit-post-text">{p.selftext}</div>}
-                    <div className="reddit-post-meta">{p.numComments} comments</div>
-                  </a>
+                    {p.selftext && (
+                      <div className={`reddit-post-text ${expandedReddit.has(p.id) ? 'reddit-text-expanded' : ''}`}>
+                        {p.selftext}
+                      </div>
+                    )}
+                    <div className="reddit-post-meta">
+                      {p.numComments} comments · {expandedReddit.has(p.id) ? 'タップで閉じる' : 'タップで展開'}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -673,6 +732,48 @@ const CompareScreen = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ═══ SPEC DETAIL MODAL ═══ */}
+      {showSpecModal && reviewPhone && (
+        <div className="selector-overlay" onClick={() => setShowSpecModal(false)}>
+          <div className="spec-modal" onClick={e => e.stopPropagation()}>
+            <div className="spec-modal-header">
+              <span>{reviewPhone.name} スペック詳細</span>
+              <button className="selector-close" onClick={() => setShowSpecModal(false)}>×</button>
+            </div>
+            <div className="spec-modal-body">
+              <table className="spec-modal-table">
+                <tbody>
+                  {[
+                    { label: 'メーカー', value: reviewPhone.brand },
+                    { label: 'カテゴリ', value: reviewPhone.category },
+                    { label: '発売年', value: reviewPhone.releaseYear },
+                    { label: '価格', value: `¥${(reviewPhone.price || 0).toLocaleString()}` },
+                    { label: 'チップ', value: reviewPhone.specs?.cpu },
+                    { label: 'RAM', value: reviewPhone.specs?.ram },
+                    { label: 'ストレージ', value: reviewPhone.specs?.storage },
+                    { label: 'カメラ', value: reviewPhone.specs?.camera },
+                    { label: 'バッテリー', value: reviewPhone.specs?.battery },
+                    { label: 'ディスプレイ', value: reviewPhone.specs?.display },
+                    { label: '充電速度', value: reviewPhone.charge },
+                    { label: '重量', value: reviewPhone.weight },
+                    { label: '総合スコア', value: reviewPhone.scores?.overall },
+                    { label: 'パフォーマンス', value: reviewPhone.scores?.fps },
+                    { label: 'カメラスコア', value: reviewPhone.scores?.camera },
+                    { label: 'バッテリースコア', value: reviewPhone.scores?.battery },
+                    { label: 'コスパスコア', value: cospaScore(reviewPhone) },
+                  ].map(row => (
+                    <tr key={row.label}>
+                      <td className="spec-modal-label">{row.label}</td>
+                      <td className="spec-modal-value">{row.value || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
