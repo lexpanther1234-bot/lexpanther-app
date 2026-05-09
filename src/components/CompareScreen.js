@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './CompareScreen.css';
@@ -10,6 +10,7 @@ const RANK_TYPES = [
   { id: 'camera', label: 'カメラ' },
   { id: 'battery', label: 'バッテリー' },
   { id: 'cospa', label: 'コスパ' },
+  { id: 'votes', label: '🗳 投票' },
 ];
 
 const SPEC_ROWS = [
@@ -62,6 +63,7 @@ const cospaScore = (phone) => {
 
 const getScore = (phone, type) => {
   if (type === 'cospa') return cospaScore(phone);
+  if (type === 'votes') return phone.voteCount || 0;
   return phone.scores?.[type] || 0;
 };
 
@@ -110,9 +112,20 @@ const CompareScreen = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Influencer reviews
+  const [influencerReviews, setInfluencerReviews] = useState([]);
+
+  // Reddit reviews
+  const [redditPosts, setRedditPosts] = useState([]);
+  const [redditLoading, setRedditLoading] = useState(false);
+
   // Likes
   const [likes, setLikes] = useState({});
   const [userLikes, setUserLikes] = useState(new Set());
+
+  // Votes
+  const [userVotes, setUserVotes] = useState(new Set());
+  const [votingId, setVotingId] = useState(null);
 
   // AI Review
   const [aiReview, setAiReview] = useState('');
@@ -131,12 +144,32 @@ const CompareScreen = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Load user votes
+  useEffect(() => {
+    if (!user) { setUserVotes(new Set()); return; }
+    const unsub = onSnapshot(
+      collection(db, 'userVotes', user.uid, 'phones'),
+      (snap) => setUserVotes(new Set(snap.docs.map(d => d.id)))
+    );
+    return () => unsub();
+  }, [user]);
+
   // Load reviews for selected phone
   useEffect(() => {
     if (!reviewPhoneId) return;
     const unsub = onSnapshot(
       collection(db, 'phones', reviewPhoneId, 'reviews'),
       (snap) => setUserReviews(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
+    return () => unsub();
+  }, [reviewPhoneId]);
+
+  // Load influencer reviews for selected phone
+  useEffect(() => {
+    if (!reviewPhoneId) return;
+    const unsub = onSnapshot(
+      collection(db, 'phones', reviewPhoneId, 'influencerReviews'),
+      (snap) => setInfluencerReviews(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     );
     return () => unsub();
   }, [reviewPhoneId]);
@@ -161,8 +194,8 @@ const CompareScreen = () => {
     return () => unsub();
   }, [reviewPhoneId, user]);
 
-  // Clear AI review on phone change
-  useEffect(() => { setAiReview(''); }, [reviewPhoneId]);
+  // Clear AI review & reddit on phone change
+  useEffect(() => { setAiReview(''); setRedditPosts([]); }, [reviewPhoneId]);
 
   const brands = useMemo(() => {
     const set = new Set(phones.map(p => p.brand).filter(Boolean));
@@ -229,6 +262,25 @@ const CompareScreen = () => {
     (p.brand || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleVote = async (phoneId) => {
+    if (!user) { signIn(); return; }
+    setVotingId(phoneId);
+    try {
+      const voteRef = doc(db, 'userVotes', user.uid, 'phones', phoneId);
+      const phoneRef = doc(db, 'phones', phoneId);
+      const voteSnap = await getDoc(voteRef);
+      if (voteSnap.exists()) {
+        await deleteDoc(voteRef);
+        await updateDoc(phoneRef, { voteCount: increment(-1) });
+      } else {
+        await setDoc(voteRef, { votedAt: serverTimestamp() });
+        await updateDoc(phoneRef, { voteCount: increment(1) });
+      }
+    } finally {
+      setVotingId(null);
+    }
+  };
+
   const handleSubmitReview = async () => {
     if (!user || !reviewPhoneId) return;
     const hasRating = REVIEW_CATEGORIES.some(c => reviewForm[c.id] > 0);
@@ -287,6 +339,21 @@ const CompareScreen = () => {
       setAiReview('レビュー生成に失敗しました。');
     } finally {
       setAiLoading(false);
+    }
+  }, [reviewPhone]);
+
+  const fetchRedditReviews = useCallback(async () => {
+    if (!reviewPhone) return;
+    setRedditLoading(true);
+    setRedditPosts([]);
+    try {
+      const res = await fetch(`/api/reddit?q=${encodeURIComponent(reviewPhone.name)}`);
+      const data = await res.json();
+      setRedditPosts(data.posts || []);
+    } catch {
+      setRedditPosts([]);
+    } finally {
+      setRedditLoading(false);
     }
   }, [reviewPhone]);
 
@@ -357,18 +424,29 @@ const CompareScreen = () => {
           <div className="rank-count">{filteredRanking.length}機種表示</div>
 
           {filteredRanking.map((phone, i) => (
-            <div key={phone.id} className="rank-item" onClick={() => { setReviewPhoneId(phone.id); setActiveSection('reviews'); }}>
+            <div key={phone.id} className="rank-item">
               <div className={`rank-num ${rankClass(i)}`}>{i + 1}</div>
-              <div className="rank-info">
+              <div className="rank-info" onClick={() => { setReviewPhoneId(phone.id); setActiveSection('reviews'); }}>
                 <div className="rank-name">{phone.name}</div>
                 <div className="rank-maker">{phone.brand} · {phone.releaseYear} · ¥{(phone.price || 0).toLocaleString()}</div>
                 <span className={`rank-category cat-${phone.category}`}>{phone.category}</span>
               </div>
               <div className="rank-score-wrap">
                 <div className="rank-score">{getScore(phone, activeRankType)}</div>
-                <div className="rank-score-label">{activeRankType === 'cospa' ? 'COSPA' : 'SCORE'}</div>
-                <div className="score-bar"><div className="score-fill" style={{ width: `${Math.min(getScore(phone, activeRankType), 100)}%` }} /></div>
+                <div className="rank-score-label">{activeRankType === 'votes' ? 'VOTES' : activeRankType === 'cospa' ? 'COSPA' : 'SCORE'}</div>
+                {activeRankType !== 'votes' && (
+                  <div className="score-bar"><div className="score-fill" style={{ width: `${Math.min(getScore(phone, activeRankType), 100)}%` }} /></div>
+                )}
               </div>
+              {activeRankType === 'votes' && (
+                <button
+                  className={`vote-btn ${userVotes.has(phone.id) ? 'voted' : ''}`}
+                  onClick={(e) => { e.stopPropagation(); handleVote(phone.id); }}
+                  disabled={votingId === phone.id}
+                >
+                  {votingId === phone.id ? '...' : userVotes.has(phone.id) ? '✓' : '🗳'}
+                </button>
+              )}
             </div>
           ))}
           {filteredRanking.length === 0 && <p className="no-result">条件に一致する機種がありません</p>}
@@ -447,7 +525,7 @@ const CompareScreen = () => {
               </div>
             </div>
             <div className="review-score-badges">
-              {RANK_TYPES.map(t => (
+              {RANK_TYPES.filter(t => t.id !== 'votes').map(t => (
                 <div key={t.id} className="rsb">
                   <span className="rsb-label">{t.label}</span>
                   <span className="rsb-score">{getScore(reviewPhone, t.id)}</span>
@@ -471,6 +549,53 @@ const CompareScreen = () => {
               <div className="ai-review-card">
                 <div className="ai-review-badge">LEX AI Review</div>
                 <div className="ai-review-text">{aiReview}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Influencer reviews */}
+          {influencerReviews.length > 0 && (
+            <div>
+              <div className="reviews-section-title">🎬 インフルエンサーレビュー</div>
+              {influencerReviews.map(r => (
+                <div key={r.id} className="review-card influencer-review-card">
+                  <div className="influencer-header">
+                    {r.avatarUrl && <img src={r.avatarUrl} alt="" className="influencer-avatar" />}
+                    <div className="influencer-info">
+                      <div className="influencer-name">{r.name}</div>
+                      <div className="influencer-channel">{r.platform || 'YouTube'} · {r.subscribers || ''}</div>
+                    </div>
+                    <div className="influencer-rating">{r.rating}/10</div>
+                  </div>
+                  <div className="review-text">{r.summary}</div>
+                  {r.url && (
+                    <a className="influencer-link" href={r.url} target="_blank" rel="noopener noreferrer">
+                      レビューを見る →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Reddit consumer reviews */}
+          <div className="reddit-section">
+            <button className="reddit-btn" onClick={fetchRedditReviews} disabled={redditLoading}>
+              {redditLoading ? '検索中...' : '🔍 Redditで消費者レビューを検索'}
+            </button>
+            {redditPosts.length > 0 && (
+              <div className="reddit-posts">
+                {redditPosts.map(p => (
+                  <a key={p.id} className="reddit-post" href={p.url} target="_blank" rel="noopener noreferrer">
+                    <div className="reddit-post-header">
+                      <span className="reddit-sub">{p.subreddit}</span>
+                      <span className="reddit-score">▲ {p.score}</span>
+                    </div>
+                    <div className="reddit-post-title">{p.title}</div>
+                    {p.selftext && <div className="reddit-post-text">{p.selftext}</div>}
+                    <div className="reddit-post-meta">{p.numComments} comments</div>
+                  </a>
+                ))}
               </div>
             )}
           </div>

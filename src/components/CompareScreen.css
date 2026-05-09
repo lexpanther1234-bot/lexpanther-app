@@ -50,6 +50,12 @@
 .score-bar { height: 3px; background: #1a2a1a; border-radius: 2px; margin-top: 3px; width: 60px; }
 .score-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #00cc66, #00ff88); }
 
+/* Vote button */
+.vote-btn { background: #0d1a0d; border: 1px solid #1a3a1a; color: #00cc66; font-size: 16px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vote-btn:hover { border-color: #00ff88; background: #1a3a1a; }
+.vote-btn.voted { background: #00ff88; color: #000; border-color: #00ff88; }
+.vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .no-result { color: #555; font-size: 13px; text-align: center; padding: 30px 0; }
 
 /* Compare slots */
@@ -105,6 +111,32 @@
 .ai-review-card { background: #0a100a; border: 1px solid #1a3a1a; border-radius: 10px; padding: 14px; margin-top: 10px; }
 .ai-review-badge { background: #00ff88; color: #000; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 8px; letter-spacing: 1px; }
 .ai-review-text { font-size: 12px; color: #bbb; line-height: 1.7; white-space: pre-wrap; }
+
+/* Influencer reviews */
+.influencer-review-card { }
+.influencer-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.influencer-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.influencer-info { flex: 1; min-width: 0; }
+.influencer-name { font-size: 12px; color: #e8e8e8; font-weight: 600; }
+.influencer-channel { font-size: 10px; color: #555; }
+.influencer-rating { background: #0d1a0d; border: 1px solid #1a3a1a; color: #00ff88; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 8px; flex-shrink: 0; }
+.influencer-link { display: inline-block; font-size: 11px; color: #00cc66; margin-top: 6px; text-decoration: none; }
+.influencer-link:hover { color: #00ff88; text-decoration: underline; }
+
+/* Reddit reviews */
+.reddit-section { margin-bottom: 14px; }
+.reddit-btn { background: linear-gradient(135deg, #1a0d0d, #2a1a0d); border: 1px solid #ff4500; color: #ff6633; font-size: 12px; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Noto Sans JP', sans-serif; width: 100%; transition: all 0.15s; }
+.reddit-btn:hover { background: #ff4500; color: #fff; }
+.reddit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.reddit-posts { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.reddit-post { display: block; background: #111; border: 1px solid #2a1a1a; border-radius: 8px; padding: 10px; text-decoration: none; transition: border-color 0.15s; }
+.reddit-post:hover { border-color: #ff4500; }
+.reddit-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.reddit-sub { font-size: 10px; color: #ff6633; font-weight: 600; }
+.reddit-score { font-size: 10px; color: #888; }
+.reddit-post-title { font-size: 12px; color: #e8e8e8; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
+.reddit-post-text { font-size: 11px; color: #666; line-height: 1.5; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.reddit-post-meta { font-size: 10px; color: #444; }
 
 /* User average scores */
 .user-avg-section { margin-bottom: 14px; }
