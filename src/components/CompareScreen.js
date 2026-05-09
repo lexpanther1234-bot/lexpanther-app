@@ -360,7 +360,7 @@ const CompareScreen = () => {
   }, [reviewPhone]);
 
   // Auto-fetch Reddit reviews when phone changes
-  // CommunityScreenと同じクライアント直接fetch方式
+  // サーバーレスプロキシ経由（CORS回避）
   useEffect(() => {
     if (!reviewPhoneId || phones.length === 0) return;
     const phone = phones.find(p => p.id === reviewPhoneId);
@@ -373,23 +373,10 @@ const CompareScreen = () => {
 
     const fetchReddit = async () => {
       try {
-        const q = encodeURIComponent(phone.name);
-        const res = await fetch(
-          `https://www.reddit.com/search.json?q=${q}&sort=top&limit=8&t=all`,
-          { headers: { 'Accept': 'application/json' } }
-        );
+        const res = await fetch(`/api/reddit?q=${encodeURIComponent(phone.name)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const posts = (data.data?.children || []).map(c => ({
-          id:          c.data.id,
-          subreddit:   c.data.subreddit,
-          author:      c.data.author,
-          title:       c.data.title,
-          selftext:    c.data.selftext || '',
-          score:       c.data.score,
-          numComments: c.data.num_comments,
-        }));
-        if (!cancelled) setRedditPosts(posts.slice(0, 5));
+        if (!cancelled) setRedditPosts(data.posts || []);
       } catch (err) {
         console.error('Reddit fetch error:', err);
         if (!cancelled) setRedditError(true);
