@@ -360,7 +360,7 @@ const CompareScreen = () => {
   }, [reviewPhone]);
 
   // Auto-fetch Reddit reviews when phone changes
-  // CORSプロキシ経由でRedditから直接取得
+  // サーバーレスプロキシ経由（old.reddit.comでブロック回避）
   useEffect(() => {
     if (!reviewPhoneId || phones.length === 0) return;
     const phone = phones.find(p => p.id === reviewPhoneId);
@@ -372,24 +372,11 @@ const CompareScreen = () => {
     let cancelled = false;
 
     const fetchReddit = async () => {
-      const redditUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(phone.name)}&sort=relevance&limit=10&t=all`;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(redditUrl)}`;
       try {
-        const res = await fetch(proxyUrl);
+        const res = await fetch(`/api/reddit?q=${encodeURIComponent(phone.name)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const posts = (data.data?.children || [])
-          .slice(0, 5)
-          .map(c => ({
-            id:          c.data.id,
-            subreddit:   c.data.subreddit,
-            author:      c.data.author,
-            title:       c.data.title,
-            selftext:    c.data.selftext || '',
-            score:       c.data.score,
-            numComments: c.data.num_comments,
-          }));
-        if (!cancelled) setRedditPosts(posts);
+        if (!cancelled) setRedditPosts(data.posts || []);
       } catch (err) {
         console.error('Reddit fetch error:', err);
         if (!cancelled) setRedditError(true);
