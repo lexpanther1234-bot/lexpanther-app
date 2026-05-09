@@ -6,22 +6,30 @@ export default async function handler(req, res) {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'query required' });
 
-  const subs = ['Android', 'smartphones', 'iphone'];
-  const results = [];
+  try {
+    // Reddit全体で検索（サブレディット制限なし）
+    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}+smartphone&sort=top&limit=8&t=all`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'LexPanther/1.0 (web review aggregator)',
+        'Accept': 'application/json',
+      },
+    });
 
-  for (const sub of subs) {
-    try {
-      const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=top&limit=2&restrict_sr=1&t=year`;
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'LexPanther/1.0 (web app; review aggregator)',
-        },
-      });
+    if (!response.ok) {
+      return res.status(200).json({ posts: [] });
+    }
 
-      if (!response.ok) continue;
-
-      const data = await response.json();
-      const posts = (data.data?.children || []).map(c => ({
+    const data = await response.json();
+    const posts = (data.data?.children || [])
+      .filter(c => {
+        const sub = c.data.subreddit.toLowerCase();
+        return ['android', 'smartphones', 'iphone', 'galaxy', 'pixel',
+                'apple', 'oneplussupport', 'xiaomi', 'samsung'].some(s => sub.includes(s))
+               || c.data.score > 10;
+      })
+      .slice(0, 5)
+      .map(c => ({
         id:          c.data.id,
         subreddit:   c.data.subreddit,
         author:      c.data.author,
@@ -29,13 +37,11 @@ export default async function handler(req, res) {
         selftext:    c.data.selftext || '',
         score:       c.data.score,
         numComments: c.data.num_comments,
-        permalink:   c.data.permalink,
       }));
-      results.push(...posts);
-    } catch (err) {
-      console.error(`Reddit fetch error for r/${sub}:`, err.message);
-    }
-  }
 
-  return res.status(200).json({ posts: results.slice(0, 6) });
+    return res.status(200).json({ posts });
+  } catch (err) {
+    console.error('Reddit search error:', err.message);
+    return res.status(200).json({ posts: [] });
+  }
 }
