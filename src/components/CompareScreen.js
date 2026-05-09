@@ -131,8 +131,8 @@ const CompareScreen = () => {
   // Spec detail modal
   const [showSpecModal, setShowSpecModal] = useState(false);
 
-  // Expanded Reddit posts
-  const [expandedReddit, setExpandedReddit] = useState(new Set());
+  // Reddit translations
+  const [redditTranslations, setRedditTranslations] = useState({});
 
   // Expanded influencer YouTube
   const [expandedYouTube, setExpandedYouTube] = useState(new Set());
@@ -209,7 +209,7 @@ const CompareScreen = () => {
     setAiReview('');
     setRedditPosts([]);
     setRedditError(false);
-    setExpandedReddit(new Set());
+    setRedditTranslations({});
     setExpandedYouTube(new Set());
     setShowSpecModal(false);
   }, [reviewPhoneId]);
@@ -389,13 +389,35 @@ const CompareScreen = () => {
     return () => { cancelled = true; };
   }, [reviewPhoneId, phones]);
 
-  const toggleRedditExpand = (id) => {
-    setExpandedReddit(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  // Auto-translate Reddit posts to Japanese
+  useEffect(() => {
+    if (redditPosts.length === 0) return;
+    let cancelled = false;
+
+    const translateAll = async () => {
+      for (const post of redditPosts) {
+        if (cancelled) break;
+        try {
+          const text = (post.title + '. ' + (post.selftext || '').slice(0, 400)).slice(0, 500);
+          const res = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ja`
+          );
+          const data = await res.json();
+          if (!cancelled && data?.responseData?.translatedText) {
+            setRedditTranslations(prev => ({
+              ...prev,
+              [post.id]: data.responseData.translatedText,
+            }));
+          }
+        } catch (err) {
+          console.error('Translation error:', err);
+        }
+      }
+    };
+
+    translateAll();
+    return () => { cancelled = true; };
+  }, [redditPosts]);
 
   const toggleYouTube = (id) => {
     setExpandedYouTube(prev => {
@@ -656,19 +678,29 @@ const CompareScreen = () => {
             ) : redditPosts.length > 0 ? (
               <div className="reddit-posts">
                 {redditPosts.map(p => (
-                  <div key={p.id} className={`reddit-post ${expandedReddit.has(p.id) ? 'expanded' : ''}`} onClick={() => toggleRedditExpand(p.id)}>
+                  <div key={p.id} className="reddit-post expanded">
                     <div className="reddit-post-header">
                       <span className="reddit-sub">r/{p.subreddit}</span>
                       <span className="reddit-score">▲ {p.score}</span>
                     </div>
-                    <div className="reddit-post-title">{p.title}</div>
+                    {redditTranslations[p.id] ? (
+                      <>
+                        <div className="reddit-post-title">{redditTranslations[p.id]}</div>
+                        <div className="reddit-original-title">原文: {p.title}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="reddit-post-title">{p.title}</div>
+                        <div className="reddit-translating">🌐 翻訳中...</div>
+                      </>
+                    )}
                     {p.selftext && (
-                      <div className={`reddit-post-text ${expandedReddit.has(p.id) ? 'reddit-text-expanded' : ''}`}>
+                      <div className="reddit-post-text reddit-text-expanded">
                         {p.selftext}
                       </div>
                     )}
                     <div className="reddit-post-meta">
-                      {p.numComments} comments · {expandedReddit.has(p.id) ? 'タップで閉じる' : 'タップで展開'}
+                      {p.numComments} comments · u/{p.author}
                     </div>
                   </div>
                 ))}

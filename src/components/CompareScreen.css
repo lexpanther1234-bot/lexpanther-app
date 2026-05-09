@@ -148,6 +148,8 @@
 .reddit-post-text { font-size: 11px; color: #666; line-height: 1.5; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 .reddit-text-expanded { -webkit-line-clamp: unset; display: block; color: #aaa; }
 .reddit-post-meta { font-size: 10px; color: #444; }
+.reddit-original-title { font-size: 10px; color: #555; margin-bottom: 4px; font-style: italic; }
+.reddit-translating { font-size: 10px; color: #ff9933; margin-bottom: 4px; }
 
 /* User average scores */
 .user-avg-section { margin-bottom: 14px; }

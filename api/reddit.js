@@ -6,8 +6,17 @@ export default async function handler(req, res) {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'query required' });
 
+  const RELEVANT_SUBS = [
+    'android', 'iphone', 'samsung', 'galaxys', 'samsunggalaxy',
+    'pixel', 'googlepixel', 'smartphones', 'mobile', 'apple',
+    'xiaomi', 'oneplus', 'motorola', 'sony', 'huawei',
+    'phonearena', 'pickanandroidforme', 'technology',
+  ];
+
   try {
-    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`;
+    // スマホ関連キーワードを追加して検索精度を上げる
+    const searchQuery = `${q} (review OR phone OR smartphone OR camera OR battery)`;
+    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=25&t=all`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'LexPanther/1.0 (web review aggregator)',
@@ -21,7 +30,18 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const posts = (data.data?.children || [])
-      .filter(c => c.data.score > 2)
+      .filter(c => {
+        const sub = c.data.subreddit.toLowerCase();
+        // スマホ関連サブレディットを優先、または本文にphone/reviewを含む
+        const isRelevantSub = RELEVANT_SUBS.some(s => sub.includes(s));
+        const title = c.data.title.toLowerCase();
+        const text = (c.data.selftext || '').toLowerCase();
+        const hasPhoneKeyword = [
+          'phone', 'smartphone', 'review', 'camera', 'battery',
+          'screen', 'display', 'chip', 'processor', 'flagship',
+        ].some(kw => title.includes(kw) || text.includes(kw));
+        return isRelevantSub || hasPhoneKeyword;
+      })
       .slice(0, 5)
       .map(c => ({
         id:          c.data.id,
