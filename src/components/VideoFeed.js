@@ -77,7 +77,7 @@ const VideoFeed = () => {
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [bilibiliVideos, setBilibiliVideos] = useState([]);
   const [bilibiliLoading, setBilibiliLoading] = useState(false);
-  const [useMultiQuery, setUseMultiQuery] = useState(true);
+  const [useMultiQuery] = useState(true);
   const loaderRef = useRef(null);
 
   const buildQuery = useCallback(() => {
