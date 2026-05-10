@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 import './ChatScreen.css';
 
-// ─────────────────────────────────────────
-// Anthropic API設定
-// .env ファイルに以下を追加してください:
-//   REACT_APP_ANTHROPIC_API_KEY=your_api_key_here
-// ─────────────────────────────────────────
-
-const SYSTEM_PROMPT = `あなたはLexPantherアプリの専属AIアシスタント「LEX」です。
+const BASE_SYSTEM_PROMPT = `あなたはLexPantherアプリの専属AIアシスタント「LEX」です。
 海外スマートフォンに精通した、品格ある執事のような口調でお答えください。
 
 口調のルール：
@@ -22,6 +18,12 @@ const SYSTEM_PROMPT = `あなたはLexPantherアプリの専属AIアシスタン
 - コスパ・予算別おすすめ
 - 最新フラッグシップ情報（Samsung・Apple・Google・Xiaomi・Sony・OnePlusなど）
 - アクセサリー選び
+
+重要ルール：
+- 機種をおすすめする際は、必ず下記の「アプリ内機種データ」に掲載されている機種から選んでください
+- データに無い機種を勧めないでください
+- スコア・価格・スペックはデータに基づいて正確に回答してください
+- 現在は2025年です
 
 スマホ以外の質問にも対応しますが、自然にスマホ話題に戻すよう心がけてください。`;
 
@@ -43,7 +45,21 @@ const ChatScreen = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [phonesData, setPhonesData] = useState('');
   const messagesEndRef = useRef(null);
+
+  // Firestoreから機種データを取得してシステムプロンプトに注入
+  useEffect(() => {
+    getDocs(collection(db, 'phones')).then((snap) => {
+      const phones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const summary = phones.map(p => {
+        const s = p.specs || {};
+        const sc = p.scores || {};
+        return `- ${p.name}（${p.brand}、${p.releaseYear}年、¥${(p.price||0).toLocaleString()}、カテゴリ:${p.category}）CPU:${s.cpu} RAM:${s.ram} ストレージ:${s.storage} カメラ:${s.camera} バッテリー:${s.battery} ディスプレイ:${s.display} 重量:${p.weight||'?'} 充電:${p.charge||'?'} スコア[総合:${sc.overall} FPS:${sc.fps} カメラ:${sc.camera} バッテリー:${sc.battery}]`;
+      }).join('\n');
+      setPhonesData(summary);
+    });
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,7 +91,9 @@ const ChatScreen = () => {
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
           max_tokens: 1024,
-          system: SYSTEM_PROMPT,
+          system: phonesData
+            ? `${BASE_SYSTEM_PROMPT}\n\n【アプリ内機種データ（${new Date().getFullYear()}年最新）】\n${phonesData}`
+            : BASE_SYSTEM_PROMPT,
           messages: apiMessages,
         }),
       });
