@@ -99,7 +99,9 @@ function parseRSS(xml) {
     const category = getAttr('category', 'label');
 
     const idMatch = link.match(/comments\/([a-z0-9]+)\//);
-    const id = idMatch ? idMatch[1] : title.slice(0, 20);
+    // commentsを含まないリンクはサブレディット紹介ページなのでスキップ
+    if (!idMatch) continue;
+    const id = idMatch[1];
 
     const textContent = content
       .replace(/<[^>]+>/g, ' ')
