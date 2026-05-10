@@ -6,10 +6,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { keyword } = req.query;
-  const q = keyword || 'スマートフォン レビュー';
+  const q = keyword || 'スマートフォン 评测 最新';
 
   try {
-    const url = `https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=${encodeURIComponent(q)}&order=pubdate&page=1&pagesize=10`;
+    const url = `https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=${encodeURIComponent(q)}&order=pubdate&page=1&pagesize=15`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',

@@ -24,6 +24,22 @@ const JAPANESE_CREATORS = ['がじぇっとれびゅー', 'スマホ情報局', 
 const GLOBAL_CHANNELS = ['MKBHD', 'Dave2D', 'MrMobile', 'SuperSaf TV'];
 const TAGS = ['flagship', 'camera', 'budget', 'review', 'comparison', 'chinese', 'japanese', 'global'];
 
+const BILIBILI_KEYWORDS = {
+  all:      'スマートフォン 评测 最新',
+  Samsung:  '三星 Galaxy 评测',
+  Apple:    '苹果 iPhone 评测',
+  Google:   'Pixel 手机 评测',
+  OnePlus:  '一加 手机 评测',
+  Xiaomi:   '小米 手机 评测',
+  Sony:     'Sony Xperia 评测',
+  OPPO:     'OPPO 手机 评测',
+  Honor:    '荣耀 手机 评测',
+  Nothing:  'Nothing Phone review',
+  Realme:   'realme 手机 评测',
+  ASUS:     'ROG Phone 评测',
+  Motorola: 'Motorola 手机 评测',
+};
+
 const formatVideo = (item, extra = {}) => ({
   videoId: item.id.videoId,
   title: item.snippet.title,
@@ -58,17 +74,19 @@ const VideoFeed = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('all');
-  const [useMultiQuery] = useState(true);
+  const [platform, setPlatform] = useState('youtube');
+  const [bilibiliVideos, setBilibiliVideos] = useState([]);
+  const [bilibiliLoading, setBilibiliLoading] = useState(false);
   const loaderRef = useRef(null);
 
   const buildQuery = useCallback(() => {
     if (selectedModel) return `${selectedModel} smartphone review`;
-    if (selectedMaker) return `${selectedMaker} smartphone review 2025`;
+    if (selectedMaker) return `${selectedMaker} smartphone review 2026`;
     if (activeTag === 'chinese') return `${CHINESE_CREATORS[Math.floor(Math.random() * CHINESE_CREATORS.length)]} smartphone`;
     if (activeTag === 'japanese') return `${JAPANESE_CREATORS[Math.floor(Math.random() * JAPANESE_CREATORS.length)]} スマホ`;
-    if (activeTag === 'global') return `${GLOBAL_CHANNELS[Math.floor(Math.random() * GLOBAL_CHANNELS.length)]} smartphone review 2025`;
-    if (activeTag) return `smartphone ${activeTag} 2025`;
-    return null; // default: use multi-query
+    if (activeTag === 'global') return `${GLOBAL_CHANNELS[Math.floor(Math.random() * GLOBAL_CHANNELS.length)]} smartphone review 2026`;
+    if (activeTag) return `smartphone ${activeTag} 2026`;
+    return null;
   }, [selectedMaker, selectedModel, activeTag]);
 
   // YouTube: マルチクエリ取得（GET /api/youtube）
@@ -99,7 +117,7 @@ const VideoFeed = () => {
   // YouTube: 既存のシングルクエリ取得（POST /api/youtube）
   const fetchVideos = useCallback(async () => {
     const query = buildQuery();
-    if (!query && useMultiQuery) {
+    if (!query) {
       fetchMultiQuery(selectedBrand);
       return;
     }
@@ -109,47 +127,22 @@ const VideoFeed = () => {
     setVideos([]);
 
     try {
-      if (!query) {
-        // フォールバック: デフォルトクエリ
-        const DEFAULT_QUERIES = ['smartphone review 2025', 'best phone 2025', 'android review 2025', 'iphone review 2025'];
-        const results = await Promise.allSettled(DEFAULT_QUERIES.map((q) => fetchPage(q)));
-        const seen = new Set();
-        const all = [];
-        const tokenMap = {};
-
-        results.forEach((r, i) => {
-          if (r.status !== 'fulfilled' || !r.value.items) return;
-          r.value.items.forEach((item) => {
-            if (!seen.has(item.id.videoId)) {
-              seen.add(item.id.videoId);
-              all.push(formatVideo(item));
-            }
-          });
-          if (r.value.nextPageToken) tokenMap[DEFAULT_QUERIES[i]] = r.value.nextPageToken;
-        });
-
-        setVideos(all);
-        const firstQ = DEFAULT_QUERIES.find((q) => tokenMap[q]);
-        if (firstQ) { setCurrentQuery(firstQ); setNextPageToken(tokenMap[firstQ]); }
-      } else {
-        const data = await fetchPage(query);
-        if (data.items) setVideos(data.items.map((item) => formatVideo(item, { maker: selectedMaker, model: selectedModel, tag: activeTag })));
-        setCurrentQuery(query);
-        setNextPageToken(data.nextPageToken || null);
-      }
+      const data = await fetchPage(query);
+      if (data.items) setVideos(data.items.map((item) => formatVideo(item, { maker: selectedMaker, model: selectedModel, tag: activeTag })));
+      setCurrentQuery(query);
+      setNextPageToken(data.nextPageToken || null);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, [buildQuery, selectedMaker, selectedModel, activeTag, useMultiQuery, selectedBrand, fetchMultiQuery]);
+  }, [buildQuery, selectedMaker, selectedModel, activeTag, selectedBrand, fetchMultiQuery]);
 
   const loadMore = useCallback(async () => {
     if (!nextPageToken || loadingMore || !currentQuery) return;
     setLoadingMore(true);
     try {
-      // ブランドフィルターでGETを使った場合
-      if (useMultiQuery && !buildQuery()) {
+      if (!buildQuery()) {
         const url = `/api/youtube?brand=${encodeURIComponent(currentQuery)}&pageToken=${nextPageToken}`;
         const res = await fetch(url);
         const data = await res.json();
@@ -173,10 +166,27 @@ const VideoFeed = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [nextPageToken, loadingMore, currentQuery, videos, useMultiQuery, buildQuery]);
+  }, [nextPageToken, loadingMore, currentQuery, videos, buildQuery]);
 
-  // 無限スクロール
+  // Bilibili取得
+  const fetchBilibili = useCallback(async (brand = 'all') => {
+    setBilibiliLoading(true);
+    try {
+      const kw = BILIBILI_KEYWORDS[brand] || BILIBILI_KEYWORDS.all;
+      const res = await fetch(`/api/bilibili?keyword=${encodeURIComponent(kw)}`);
+      const data = await res.json();
+      setBilibiliVideos(data.videos || []);
+    } catch (err) {
+      console.error('Bilibili fetch error:', err);
+      setBilibiliVideos([]);
+    } finally {
+      setBilibiliLoading(false);
+    }
+  }, []);
+
+  // 無限スクロール（YouTube only）
   useEffect(() => {
+    if (platform !== 'youtube') return;
     const el = loaderRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -185,19 +195,31 @@ const VideoFeed = () => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [loadMore, platform]);
 
   // YouTubeフィルター変更時
   useEffect(() => {
-    fetchVideos();
+    if (platform === 'youtube') fetchVideos();
   }, [selectedMaker, selectedModel, activeTag]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ブランドタブ変更時
   useEffect(() => {
-    if (!selectedMaker && !activeTag) {
+    if (platform === 'youtube' && !selectedMaker && !activeTag) {
       fetchMultiQuery(selectedBrand);
     }
+    if (platform === 'bilibili') {
+      fetchBilibili(selectedBrand);
+    }
   }, [selectedBrand]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // プラットフォーム切替時
+  useEffect(() => {
+    if (platform === 'bilibili') {
+      fetchBilibili(selectedBrand);
+    } else {
+      fetchVideos();
+    }
+  }, [platform]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMakerChange = (e) => { setSelectedMaker(e.target.value); setSelectedModel(''); };
 
@@ -213,6 +235,22 @@ const VideoFeed = () => {
     <div className="video-feed">
       <h2 className="feed-section-title">▶ Video Feed</h2>
 
+      {/* プラットフォーム切り替え */}
+      <div className="feed-platform-tabs">
+        <button
+          className={`platform-tab ${platform === 'youtube' ? 'active' : ''}`}
+          onClick={() => setPlatform('youtube')}
+        >
+          ▶ YouTube
+        </button>
+        <button
+          className={`platform-tab ${platform === 'bilibili' ? 'active' : ''}`}
+          onClick={() => setPlatform('bilibili')}
+        >
+          📺 Bilibili
+        </button>
+      </div>
+
       {/* ブランドフィルタータブ */}
       <div className="brand-filter-row">
         {BRAND_LIST.map(b => (
@@ -226,8 +264,9 @@ const VideoFeed = () => {
         ))}
       </div>
 
-      {/* フィルター */}
-      <>
+      {/* YouTube専用フィルター */}
+      {platform === 'youtube' && (
+        <>
           <input
             className="search-input"
             type="text"
@@ -262,10 +301,13 @@ const VideoFeed = () => {
               <button key={tag} className={`tag-btn ${activeTag === tag ? 'active' : ''}`} onClick={() => setActiveTag(tag)}>{tag}</button>
             ))}
           </div>
-      </>
+        </>
+      )}
 
-      {/* 動画リスト */}
-      <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
+      {/* YouTube動画リスト */}
+      {platform === 'youtube' && (
+        <>
+          <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
 
           {loading ? (
             <p className="no-result">読み込み中...</p>
@@ -284,6 +326,38 @@ const VideoFeed = () => {
               </div>
             </>
           )}
+        </>
+      )}
+
+      {/* Bilibili動画リスト */}
+      {platform === 'bilibili' && (
+        <div className="bilibili-feed">
+          {bilibiliLoading ? (
+            <p className="no-result">Bilibiliから取得中...</p>
+          ) : bilibiliVideos.length > 0 ? (
+            bilibiliVideos.map(v => (
+              <a
+                key={v.id}
+                href={v.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bilibili-card"
+              >
+                <img src={v.thumbnail} alt={v.title} className="bilibili-thumb" />
+                <div className="bilibili-info">
+                  <div className="bilibili-title">{v.title}</div>
+                  <div className="bilibili-meta">
+                    <span>{v.author}</span>
+                    <span>▶ {(v.play || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </a>
+            ))
+          ) : (
+            <p className="no-result">動画が見つかりませんでした</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

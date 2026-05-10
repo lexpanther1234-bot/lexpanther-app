@@ -11,6 +11,7 @@ const RANK_TYPES = [
   { id: 'camera', label: 'カメラ' },
   { id: 'battery', label: 'バッテリー' },
   { id: 'cospa', label: 'コスパ' },
+  { id: 'antutu', label: '🔥 Antutu' },
   { id: 'votes', label: '🗳 投票' },
 ];
 
@@ -27,6 +28,10 @@ const SPEC_ROWS = [
   { label: 'パフォーマンス', key: 'fps', isScore: true },
   { label: 'カメラスコア', key: 'camera', isScore: true },
   { label: 'バッテリースコア', key: 'battery', isScore: true },
+  { label: 'Antutu', key: 'antutu', isBenchmark: true },
+  { label: 'Geekbench Single', key: 'geekbench_single', isBenchmark: true },
+  { label: 'Geekbench Multi', key: 'geekbench_multi', isBenchmark: true },
+  { label: '3DMark', key: 'dmark', isBenchmark: true },
 ];
 
 const REVIEW_CATEGORIES = [
@@ -65,6 +70,7 @@ const cospaScore = (phone) => {
 const getScore = (phone, type) => {
   if (type === 'cospa') return cospaScore(phone);
   if (type === 'votes') return phone.voteCount || 0;
+  if (type === 'antutu') return phone.benchmarks?.antutu || 0;
   const baseScore = phone.scores?.[type] || 0;
   const reviewAvg = phone.reviewAvg;
   if (!reviewAvg || !reviewAvg.count) return baseScore;
@@ -94,6 +100,7 @@ const Stars = ({ count, interactive, onRate }) => (
 );
 
 const getSpecValue = (phone, row) => {
+  if (row.isBenchmark) return phone.benchmarks?.[row.key] ? phone.benchmarks[row.key].toLocaleString() : '—';
   if (row.isScore) return phone.scores?.[row.key];
   if (row.isSpec) return phone.specs?.[row.key];
   if (row.isPrice) return `¥${(phone.price || 0).toLocaleString()}`;
@@ -576,10 +583,10 @@ const CompareScreen = () => {
                 <span className={`rank-category cat-${phone.category}`}>{phone.category}</span>
               </div>
               <div className="rank-score-wrap">
-                <div className="rank-score">{getScore(phone, activeRankType)}</div>
-                <div className="rank-score-label">{activeRankType === 'votes' ? 'VOTES' : activeRankType === 'cospa' ? 'COSPA' : 'SCORE'}</div>
+                <div className="rank-score">{activeRankType === 'antutu' ? (getScore(phone, activeRankType) || 0).toLocaleString() : getScore(phone, activeRankType)}</div>
+                <div className="rank-score-label">{activeRankType === 'votes' ? 'VOTES' : activeRankType === 'cospa' ? 'COSPA' : activeRankType === 'antutu' ? 'ANTUTU' : 'SCORE'}</div>
                 {activeRankType !== 'votes' && (
-                  <div className="score-bar"><div className="score-fill" style={{ width: `${Math.min(getScore(phone, activeRankType), 100)}%` }} /></div>
+                  <div className="score-bar"><div className="score-fill" style={{ width: `${activeRankType === 'antutu' ? Math.min((getScore(phone, activeRankType) / 3000000) * 100, 100) : Math.min(getScore(phone, activeRankType), 100)}%` }} /></div>
                 )}
               </div>
               {activeRankType === 'votes' && (
@@ -633,6 +640,30 @@ const CompareScreen = () => {
                 <tbody>
                   {SPEC_ROWS.map(row => {
                     const vals = selectedPhones.map(p => getSpecValue(p, row));
+                    if (row.isBenchmark) {
+                      const numVals = selectedPhones.map(p => p.benchmarks?.[row.key] || 0);
+                      const maxVal = Math.max(...numVals);
+                      return (
+                        <tr key={row.label} className="benchmark-row">
+                          <td className="spec-label">{row.label}</td>
+                          {selectedPhones.map((p) => {
+                            const val = p.benchmarks?.[row.key] || 0;
+                            const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                            const isBest = val === maxVal && val > 0;
+                            return (
+                              <td key={p.id} className={isBest ? 'spec-best' : ''}>
+                                <div className="benchmark-value">{val ? val.toLocaleString() : '—'}</div>
+                                {val > 0 && (
+                                  <div className="benchmark-bar-wrap">
+                                    <div className="benchmark-bar" style={{ width: `${pct}%` }} />
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    }
                     const best = row.isScore ? Math.max(...vals.map(Number)) : null;
                     return (
                       <tr key={row.label}>

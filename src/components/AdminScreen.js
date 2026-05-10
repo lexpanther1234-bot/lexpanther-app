@@ -8,6 +8,7 @@ const EMPTY_PHONE = {
   name: '', brand: '', price: 0, image: '', category: 'flagship', releaseYear: 2025,
   specs: { cpu: '', ram: '', storage: '', camera: '', battery: '', display: '' },
   scores: { overall: 0, fps: 0, camera: 0, battery: 0 },
+  benchmarks: { antutu: 0, geekbench_single: 0, geekbench_multi: 0, dmark: 0 },
   weight: '', charge: '', shopUrl: '',
 };
 
@@ -84,6 +85,7 @@ const AdminScreen = () => {
       weight: phone.weight || '',
       charge: phone.charge || '',
       shopUrl: phone.shopUrl || '',
+      benchmarks: { ...EMPTY_PHONE.benchmarks, ...phone.benchmarks },
     });
   };
 
@@ -101,6 +103,12 @@ const AdminScreen = () => {
           fps: Number(form.scores.fps),
           camera: Number(form.scores.camera),
           battery: Number(form.scores.battery),
+        },
+        benchmarks: {
+          antutu: Number(form.benchmarks?.antutu) || 0,
+          geekbench_single: Number(form.benchmarks?.geekbench_single) || 0,
+          geekbench_multi: Number(form.benchmarks?.geekbench_multi) || 0,
+          dmark: Number(form.benchmarks?.dmark) || 0,
         },
       };
       await setDoc(doc(db, 'phones', id), data);
@@ -280,6 +288,27 @@ const AdminScreen = () => {
                 <label className="form-row" key={key}>
                   <span>{key}</span>
                   <input type="number" value={form.scores[key]} onChange={(e) => updateField(`scores.${key}`, e.target.value)} />
+                </label>
+              ))}
+
+              <h4 className="form-section">ベンチマークスコア</h4>
+              {[
+                { key: 'antutu', label: 'Antutu', placeholder: '例: 2100000' },
+                { key: 'geekbench_single', label: 'Geekbench Single', placeholder: '例: 3200' },
+                { key: 'geekbench_multi', label: 'Geekbench Multi', placeholder: '例: 8500' },
+                { key: 'dmark', label: '3DMark Wild Life', placeholder: '例: 12000' },
+              ].map(b => (
+                <label className="form-row" key={b.key}>
+                  <span>{b.label}</span>
+                  <input
+                    type="number"
+                    placeholder={b.placeholder}
+                    value={form.benchmarks?.[b.key] || ''}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      benchmarks: { ...prev.benchmarks, [b.key]: e.target.value }
+                    }))}
+                  />
                 </label>
               ))}
 

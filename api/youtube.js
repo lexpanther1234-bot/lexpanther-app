@@ -14,28 +14,28 @@ export default async function handler(req, res) {
 
     // Firestoreのbrand一覧に基づくクエリ（16ブランド）
     const BRAND_QUERIES = [
-      'Samsung Galaxy review 2025',
-      'iPhone Apple review 2025',
-      'Xiaomi review 2025',
-      'OnePlus review 2025',
-      'Google Pixel review 2025',
-      'OPPO Find review 2025',
-      'Sony Xperia review 2025',
-      'Nothing Phone review 2025',
-      'Motorola review 2025',
-      'Realme review 2025',
-      'Honor review 2025',
-      'ASUS ROG Phone review 2025',
-      'Nubia RedMagic review 2025',
-      'Sharp AQUOS review 2025',
-      'ZTE review 2025',
-      'Lenovo Legion Phone review 2025',
+      'Samsung Galaxy review 2026',
+      'iPhone Apple review 2026',
+      'Xiaomi review 2026',
+      'OnePlus review 2026',
+      'Google Pixel review 2026',
+      'OPPO Find review 2026',
+      'Sony Xperia review 2026',
+      'Nothing Phone review 2026',
+      'Motorola review 2026',
+      'Realme review 2026',
+      'Honor review 2026',
+      'ASUS ROG Phone review 2026',
+      'Nubia RedMagic review 2026',
+      'Sharp AQUOS review 2026',
+      'ZTE review 2026',
+      'Lenovo Legion Phone review 2026',
     ];
 
     try {
       // 単一ブランド指定の場合
       if (brand && brand !== 'all') {
-        const query = encodeURIComponent(`${brand} smartphone review 2025`);
+        const query = encodeURIComponent(`${brand} smartphone review 2026`);
         const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&order=date&maxResults=20&relevanceLanguage=en&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
         const response = await fetch(url);
         const data = await response.json();
