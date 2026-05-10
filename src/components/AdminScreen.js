@@ -22,6 +22,7 @@ const AdminScreen = () => {
   const [form, setForm] = useState(EMPTY_PHONE);
   const [docId, setDocId] = useState('');
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   // Influencer reviews
   const [adminTab, setAdminTab] = useState('phones');
@@ -106,6 +107,37 @@ const AdminScreen = () => {
       setEditing(null);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAutoGenerate = async () => {
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/generate-scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          specs: form.specs,
+          price: Number(form.price),
+          category: form.category,
+        }),
+      });
+      const data = await res.json();
+      if (data.scores) {
+        setForm(prev => ({
+          ...prev,
+          scores: {
+            overall: data.scores.overall,
+            fps: data.scores.fps,
+            camera: data.scores.camera,
+            battery: data.scores.battery,
+          },
+        }));
+      }
+    } catch (err) {
+      console.error('Score generation error:', err);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -241,6 +273,9 @@ const AdminScreen = () => {
               ))}
 
               <h4 className="form-section">スコア</h4>
+              <button className="admin-add-btn" onClick={handleAutoGenerate} disabled={generating} style={{ marginBottom: '12px', fontSize: '12px' }}>
+                {generating ? '生成中...' : '🤖 AIスコア自動生成'}
+              </button>
               {['overall', 'fps', 'camera', 'battery'].map((key) => (
                 <label className="form-row" key={key}>
                   <span>{key}</span>

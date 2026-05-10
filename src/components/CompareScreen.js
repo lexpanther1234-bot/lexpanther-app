@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { blendScore, SCORE_REVIEW_MAP } from '../utils/scoreBlending';
 import './CompareScreen.css';
 
 const RANK_TYPES = [
@@ -64,7 +65,19 @@ const cospaScore = (phone) => {
 const getScore = (phone, type) => {
   if (type === 'cospa') return cospaScore(phone);
   if (type === 'votes') return phone.voteCount || 0;
-  return phone.scores?.[type] || 0;
+  const baseScore = phone.scores?.[type] || 0;
+  const reviewAvg = phone.reviewAvg;
+  if (!reviewAvg || !reviewAvg.count) return baseScore;
+  // overallは全カテゴリの平均、他はマッピングに従う
+  const reviewField = SCORE_REVIEW_MAP[type];
+  if (type === 'overall') {
+    const avg = (reviewAvg.performance + reviewAvg.camera + reviewAvg.battery) / 3;
+    return blendScore(baseScore, avg, reviewAvg.count);
+  }
+  if (reviewField && reviewAvg[reviewField]) {
+    return blendScore(baseScore, reviewAvg[reviewField], reviewAvg.count);
+  }
+  return baseScore;
 };
 
 const Stars = ({ count, interactive, onRate }) => (
@@ -303,6 +316,24 @@ const CompareScreen = () => {
     }
   };
 
+  // レビュー平均をphoneドキュメントに保存（ランキング反映用）
+  const updateReviewAvg = useCallback(async (phoneId, reviews) => {
+    const categories = ['camera', 'design', 'battery', 'performance', 'cospa'];
+    if (reviews.length === 0) {
+      await updateDoc(doc(db, 'phones', phoneId), { reviewAvg: null });
+      return;
+    }
+    const sums = {};
+    categories.forEach(c => { sums[c] = 0; });
+    reviews.forEach(r => {
+      categories.forEach(c => { sums[c] += (r[c] || 0); });
+    });
+    const avg = {};
+    categories.forEach(c => { avg[c] = +(sums[c] / reviews.length).toFixed(1); });
+    avg.count = reviews.length;
+    await updateDoc(doc(db, 'phones', phoneId), { reviewAvg: avg });
+  }, []);
+
   const handleSubmitReview = async () => {
     if (!user || !reviewPhoneId) return;
     const hasRating = REVIEW_CATEGORIES.some(c => reviewForm[c.id] > 0);
@@ -317,6 +348,9 @@ const CompareScreen = () => {
         text: reviewForm.text,
         createdAt: serverTimestamp(),
       });
+      // レビュー平均を即時更新（新しいレビューを含む）
+      const newReviews = [...userReviews, Object.fromEntries(REVIEW_CATEGORIES.map(c => [c.id, reviewForm[c.id]]))];
+      await updateReviewAvg(reviewPhoneId, newReviews);
       setReviewForm({ camera: 0, design: 0, battery: 0, performance: 0, cospa: 0, text: '' });
       setShowReviewForm(false);
     } finally {
@@ -327,6 +361,9 @@ const CompareScreen = () => {
   const handleDeleteReview = async (reviewId) => {
     if (!user || !reviewPhoneId) return;
     await deleteDoc(doc(db, 'phones', reviewPhoneId, 'reviews', reviewId));
+    // レビュー平均を再計算
+    const remaining = userReviews.filter(r => r.id !== reviewId);
+    await updateReviewAvg(reviewPhoneId, remaining);
   };
 
   const handleLike = async () => {
