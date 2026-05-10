@@ -24,21 +24,24 @@ export default async function handler(req) {
     'Content-Type': 'application/json',
   };
 
+  // レビュー・体験談・良い評価も拾えるようキーワードを追加
+  const searchQuery = `${q} (review OR experience OR love OR best OR worth OR upgrade OR impressions)`;
+
   // 3つの方法を順に試す
   const attempts = [
     {
       name: 'RSS',
-      url: `https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`,
+      url: `https://www.reddit.com/search.rss?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=10&t=all`,
       parse: parseRSS,
     },
     {
       name: 'old.reddit JSON',
-      url: `https://old.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`,
+      url: `https://old.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=10&t=all`,
       parse: parseJSON,
     },
     {
       name: 'www.reddit JSON',
-      url: `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=relevance&limit=10&t=all`,
+      url: `https://www.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=10&t=all`,
       parse: parseJSON,
     },
   ];
@@ -118,6 +121,7 @@ function parseRSS(xml) {
       selftext: textContent,
       score: 0,
       numComments: 0,
+      url: link,
     });
   }
   return entries.slice(0, 10);
@@ -134,6 +138,7 @@ function parseJSON(text) {
       selftext: c.data.selftext || '',
       score: c.data.score,
       numComments: c.data.num_comments,
+      url: `https://www.reddit.com${c.data.permalink}`,
     }));
   } catch {
     return [];

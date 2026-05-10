@@ -730,6 +730,13 @@ const CompareScreen = () => {
                         {p.selftext}
                       </div>
                     )}
+                    <div className="reddit-post-footer">
+                      {p.url && (
+                        <a className="reddit-link-btn" href={p.url} target="_blank" rel="noopener noreferrer">
+                          ↗ Redditで見る
+                        </a>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {redditHasMore && (
