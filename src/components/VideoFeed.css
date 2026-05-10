@@ -333,3 +333,116 @@
   border-color: #00ff88;
   color: #00ff88;
 }
+
+/* ── プラットフォームタブ ── */
+.feed-platform-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.platform-tab {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+.platform-tab:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+.platform-tab.active {
+  background: rgba(0,255,136,0.12);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+/* ── ブランドフィルタータブ ── */
+.brand-filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.brand-filter-row::-webkit-scrollbar {
+  display: none;
+}
+.brand-tab {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 11px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.brand-tab:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+.brand-tab.active {
+  background: #00ff88;
+  color: #000;
+  border-color: #00ff88;
+  font-weight: 600;
+}
+
+/* ── Bilibiliカード ── */
+.bilibili-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bilibili-card {
+  display: flex;
+  gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s;
+}
+.bilibili-card:hover {
+  border-color: rgba(0,160,220,0.5);
+}
+.bilibili-thumb {
+  width: 140px;
+  height: 88px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.bilibili-info {
+  padding: 10px 12px 10px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+.bilibili-title {
+  color: #ddd;
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bilibili-meta {
+  display: flex;
+  gap: 12px;
+  color: #555;
+  font-size: 11px;
+}
