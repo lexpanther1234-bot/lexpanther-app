@@ -24,22 +24,6 @@ const JAPANESE_CREATORS = ['がじぇっとれびゅー', 'スマホ情報局', 
 const GLOBAL_CHANNELS = ['MKBHD', 'Dave2D', 'MrMobile', 'SuperSaf TV'];
 const TAGS = ['flagship', 'camera', 'budget', 'review', 'comparison', 'chinese', 'japanese', 'global'];
 
-const BILIBILI_KEYWORDS = {
-  all:      '手机 评测 2025',
-  Samsung:  '三星 Galaxy 评测',
-  Apple:    '苹果 iPhone 评测',
-  Google:   'Google Pixel 评测',
-  OnePlus:  '一加 手机 评测',
-  Xiaomi:   '小米 手机 评测',
-  Sony:     'Sony Xperia 评测',
-  OPPO:     'OPPO Find 评测',
-  Honor:    '荣耀 手机 评测',
-  Nothing:  'Nothing Phone review',
-  Realme:   'realme 手机 评测',
-  ASUS:     'ROG Phone 评测',
-  Motorola: 'Motorola 手机 评测',
-};
-
 const formatVideo = (item, extra = {}) => ({
   videoId: item.id.videoId,
   title: item.snippet.title,
@@ -73,10 +57,7 @@ const VideoFeed = () => {
   const [selectedMaker, setSelectedMaker] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [activeTag, setActiveTag] = useState('');
-  const [platform, setPlatform] = useState('youtube');
   const [selectedBrand, setSelectedBrand] = useState('all');
-  const [bilibiliVideos, setBilibiliVideos] = useState([]);
-  const [bilibiliLoading, setBilibiliLoading] = useState(false);
   const [useMultiQuery] = useState(true);
   const loaderRef = useRef(null);
 
@@ -194,25 +175,8 @@ const VideoFeed = () => {
     }
   }, [nextPageToken, loadingMore, currentQuery, videos, useMultiQuery, buildQuery]);
 
-  // Bilibili取得
-  const fetchBilibili = useCallback(async (brand = 'all') => {
-    setBilibiliLoading(true);
-    try {
-      const keyword = BILIBILI_KEYWORDS[brand] || BILIBILI_KEYWORDS.all;
-      const res = await fetch(`/api/bilibili?keyword=${encodeURIComponent(keyword)}`);
-      const data = await res.json();
-      setBilibiliVideos(data.videos || []);
-    } catch (err) {
-      console.error('Bilibili fetch error:', err);
-      setBilibiliVideos([]);
-    } finally {
-      setBilibiliLoading(false);
-    }
-  }, []);
-
   // 無限スクロール
   useEffect(() => {
-    if (platform !== 'youtube') return;
     const el = loaderRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -221,33 +185,19 @@ const VideoFeed = () => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore, platform]);
+  }, [loadMore]);
 
   // YouTubeフィルター変更時
   useEffect(() => {
-    if (platform === 'youtube') fetchVideos();
+    fetchVideos();
   }, [selectedMaker, selectedModel, activeTag]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ブランドタブ変更時
   useEffect(() => {
-    if (platform === 'youtube' && !selectedMaker && !activeTag) {
+    if (!selectedMaker && !activeTag) {
       fetchMultiQuery(selectedBrand);
     }
   }, [selectedBrand]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // プラットフォーム切替時
-  useEffect(() => {
-    if (platform === 'bilibili') {
-      fetchBilibili(selectedBrand);
-    } else {
-      fetchVideos();
-    }
-  }, [platform]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Bilibiliブランド変更時
-  useEffect(() => {
-    if (platform === 'bilibili') fetchBilibili(selectedBrand);
-  }, [selectedBrand, platform, fetchBilibili]);
 
   const handleMakerChange = (e) => { setSelectedMaker(e.target.value); setSelectedModel(''); };
 
@@ -263,22 +213,6 @@ const VideoFeed = () => {
     <div className="video-feed">
       <h2 className="feed-section-title">▶ Video Feed</h2>
 
-      {/* プラットフォーム切り替え */}
-      <div className="feed-platform-tabs">
-        <button
-          className={`platform-tab ${platform === 'youtube' ? 'active' : ''}`}
-          onClick={() => setPlatform('youtube')}
-        >
-          ▶ YouTube
-        </button>
-        <button
-          className={`platform-tab ${platform === 'bilibili' ? 'active' : ''}`}
-          onClick={() => setPlatform('bilibili')}
-        >
-          📺 Bilibili
-        </button>
-      </div>
-
       {/* ブランドフィルタータブ */}
       <div className="brand-filter-row">
         {BRAND_LIST.map(b => (
@@ -292,9 +226,8 @@ const VideoFeed = () => {
         ))}
       </div>
 
-      {/* YouTube専用フィルター */}
-      {platform === 'youtube' && (
-        <>
+      {/* フィルター */}
+      <>
           <input
             className="search-input"
             type="text"
@@ -329,13 +262,10 @@ const VideoFeed = () => {
               <button key={tag} className={`tag-btn ${activeTag === tag ? 'active' : ''}`} onClick={() => setActiveTag(tag)}>{tag}</button>
             ))}
           </div>
-        </>
-      )}
+      </>
 
-      {/* YouTube動画リスト */}
-      {platform === 'youtube' && (
-        <>
-          <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
+      {/* 動画リスト */}
+      <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
 
           {loading ? (
             <p className="no-result">読み込み中...</p>
@@ -354,38 +284,6 @@ const VideoFeed = () => {
               </div>
             </>
           )}
-        </>
-      )}
-
-      {/* Bilibili動画リスト */}
-      {platform === 'bilibili' && (
-        <div className="bilibili-feed">
-          {bilibiliLoading ? (
-            <p className="no-result">Bilibiliから取得中...</p>
-          ) : bilibiliVideos.length > 0 ? (
-            bilibiliVideos.map(v => (
-              <a
-                key={v.id}
-                href={v.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bilibili-card"
-              >
-                <img src={v.thumbnail} alt={v.title} className="bilibili-thumb" />
-                <div className="bilibili-info">
-                  <div className="bilibili-title">{v.title}</div>
-                  <div className="bilibili-meta">
-                    <span>{v.author}</span>
-                    <span>▶ {(v.play || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-              </a>
-            ))
-          ) : (
-            <p className="no-result">動画が見つかりませんでした</p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
