@@ -48,14 +48,19 @@ const ChatScreen = () => {
   const [phonesData, setPhonesData] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Firestoreから機種データを取得してシステムプロンプトに注入
+  // Firestoreから機種データを取得してシステムプロンプトに注入（最新機種のみ）
   useEffect(() => {
     getDocs(collection(db, 'phones')).then((snap) => {
       const phones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const summary = phones.map(p => {
+      // 2024年以降の機種のみ（トークン節約）、スコア上位順
+      const recent = phones
+        .filter(p => (p.releaseYear || 0) >= 2024)
+        .sort((a, b) => (b.scores?.overall || 0) - (a.scores?.overall || 0))
+        .slice(0, 60); // 最大60機種
+      const summary = recent.map(p => {
         const s = p.specs || {};
         const sc = p.scores || {};
-        return `- ${p.name}（${p.brand}、${p.releaseYear}年、¥${(p.price||0).toLocaleString()}、カテゴリ:${p.category}）CPU:${s.cpu} RAM:${s.ram} ストレージ:${s.storage} カメラ:${s.camera} バッテリー:${s.battery} ディスプレイ:${s.display} 重量:${p.weight||'?'} 充電:${p.charge||'?'} スコア[総合:${sc.overall} FPS:${sc.fps} カメラ:${sc.camera} バッテリー:${sc.battery}]`;
+        return `- ${p.name}（${p.brand}、${p.releaseYear}年、¥${(p.price||0).toLocaleString()}）CPU:${s.cpu} カメラ:${s.camera} バッテリー:${s.battery} スコア[総合:${sc.overall} カメラ:${sc.camera} バッテリー:${sc.battery}]`;
       }).join('\n');
       setPhonesData(summary);
     });
@@ -89,8 +94,6 @@ const ChatScreen = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5',
-          max_tokens: 1024,
           system: phonesData
             ? `${BASE_SYSTEM_PROMPT}\n\n【アプリ内機種データ（${new Date().getFullYear()}年最新）】\n${phonesData}`
             : BASE_SYSTEM_PROMPT,
