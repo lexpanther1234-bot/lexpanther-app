@@ -40,22 +40,16 @@ const RSS_SOURCES = [
 
 const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
 
-// ── 翻訳関数（MyMemory 無料API）─────────────
-const translateText = async (text) => {
-  const res = await fetch(
-    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|ja`
-  );
-  const data = await res.json();
-  return data?.responseData?.translatedText || text;
-};
-
-const translateWithMyMemory = async (title, description) => {
-  const plainDesc = (description || '').replace(/<[^>]*>/g, '').slice(0, 500);
-  const [translatedTitle, translatedDesc] = await Promise.all([
-    translateText(title),
-    plainDesc ? translateText(plainDesc) : Promise.resolve(''),
-  ]);
-  return { title: translatedTitle, description: translatedDesc };
+// ── 翻訳関数（Groq LLM経由）─────────────
+const translateArticle = async (title, description) => {
+  const plainDesc = (description || '').replace(/<[^>]*>/g, '').slice(0, 1000);
+  const res = await fetch('/api/translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description: plainDesc }),
+  });
+  if (!res.ok) throw new Error('Translation failed');
+  return res.json();
 };
 
 // ── ニュースカード ──────────────────────────
@@ -71,7 +65,7 @@ const NewsCard = ({ item }) => {
       setExpanded(true);
       setTranslating(true);
       try {
-        const result = await translateWithMyMemory(item.title, item.description);
+        const result = await translateArticle(item.title, item.description);
         setTranslated(result);
       } catch (e) {
         setTranslated({ title: item.title, description: item.description });
