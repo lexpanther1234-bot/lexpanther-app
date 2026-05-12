@@ -1,0 +1,85 @@
+.splash-screen {
+  align-items: center;
+  background: #000;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+}
+
+.splash-content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 360px;
+  padding: 0 24px;
+}
+
+/* ロゴ画像：hue-rotateでシアン→緑に変換 */
+.splash-logo-img {
+  width: 75%;
+  max-width: 260px;
+  height: auto;
+  filter: hue-rotate(-38deg) saturate(1.1) brightness(1.05);
+  display: block;
+  margin-bottom: -8px;
+}
+
+.splash-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+
+.splash-lex {
+  color: #00ff88;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.splash-panther {
+  color: #e0e0e0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.splash-tagline {
+  color: #2a2a2a;
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 4px;
+  margin-bottom: 28px;
+}
+
+.splash-bar-bg {
+  background: #1a1a1a;
+  border-radius: 2px;
+  height: 3px;
+  overflow: hidden;
+  width: 100px;
+}
+
+.splash-bar-fill {
+  background: #00ff88;
+  border-radius: 2px;
+  height: 100%;
+  transition: width 0.03s linear;
+}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import SplashScreen from './components/SplashScreen';
 import VideoFeed from './components/VideoFeed';
 import NewsScreen from './components/NewsScreen';
 import ShopScreen from './components/ShopScreen';
@@ -11,7 +12,14 @@ import './App.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('feed');
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
   const { user, signIn, signOut } = useAuth();
+
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   return (
     <div className="App">
       <div className="app-header">
