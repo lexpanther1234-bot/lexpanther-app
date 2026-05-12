@@ -16,7 +16,6 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './CommunityScreen.css';
 
-const TAGS = ['review', 'question', 'deal', 'photo'];
 const SUBREDDITS = ['Android', 'iphone', 'Smartphones'];
 
 // ── ヘルパー ──────────────────────────────────
@@ -34,7 +33,7 @@ const formatTime = (ts) => {
   return `${Math.floor(diff / 86400)}日前`;
 };
 
-const isJapanese = (text) => /[\u3040-\u9FFF\uFF00-\uFFEF]/.test(text || '');
+const isJapanese = (text) => /[぀-鿿＀-￯]/.test(text || '');
 const needsTranslation = (post) =>
   !isJapanese((post.title || '') + (post.body || ''));
 
@@ -134,12 +133,13 @@ const SourceBadge = ({ source }) => {
 };
 
 // ── ユーザー投稿カード ────────────────────────
-const PostCard = ({ post, user, onLoginRequest }) => {
+const PostCard = ({ post, user, onLoginRequest, onTagClick, activeTag }) => {
   const liked = user ? (post.likedBy || []).includes(user.uid) : false;
   const [commentOpen, setCommentOpen] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
+  const postType = post.postType || 'general';
 
   const handleLike = async () => {
     if (!user) { onLoginRequest(); return; }
@@ -186,7 +186,40 @@ const PostCard = ({ post, user, onLoginRequest }) => {
   };
 
   return (
-    <div className="post-card">
+    <div className={`post-card post-type-${postType}`}>
+      {/* タイプバッジ */}
+      {postType !== 'general' && (
+        <div className={`post-type-badge badge-${postType}`}>
+          {postType === 'question' ? '🙋 購入相談' :
+           postType === 'purchase' ? '📦 購入レポ' :
+           postType === 'sale'     ? '💰 セール情報' : ''}
+        </div>
+      )}
+
+      {/* 購入レポ情報 */}
+      {postType === 'purchase' && post.phoneName && (
+        <div className="post-purchase-info">
+          <span className="purchase-phone">📱 {post.phoneName}</span>
+          {post.purchasePlace && <span className="purchase-place">🏪 {post.purchasePlace}</span>}
+          {post.purchasePrice > 0 && <span className="purchase-price">¥{post.purchasePrice.toLocaleString()}</span>}
+        </div>
+      )}
+
+      {/* セール情報 */}
+      {postType === 'sale' && (
+        <div className="post-sale-info">
+          {post.salePhoneName && <span className="sale-phone">📱 {post.salePhoneName}</span>}
+          {post.salePrice > 0 && <span className="sale-price">🔥 ¥{post.salePrice.toLocaleString()}</span>}
+          {post.saleDeadline && <span className="sale-deadline">⏰ {post.saleDeadline}</span>}
+          {post.saleUrl && (
+            <a href={post.saleUrl} target="_blank" rel="noopener noreferrer" className="sale-link"
+               onClick={e => e.stopPropagation()}>
+              セールページを見る →
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="post-header">
         <div className="post-avatar">{post.avatarInitials}</div>
         <div className="post-meta">
@@ -195,7 +228,7 @@ const PostCard = ({ post, user, onLoginRequest }) => {
         </div>
         <div className="post-badges">
           <SourceBadge source="user" />
-          <span className="post-tag-pill">{post.tag}</span>
+          {post.tag && <span className="post-tag-pill">{post.tag}</span>}
         </div>
       </div>
 
@@ -203,6 +236,32 @@ const PostCard = ({ post, user, onLoginRequest }) => {
 
       {post.imageUrl && (
         <img className="post-image" src={post.imageUrl} alt="投稿画像" />
+      )}
+
+      {/* ハッシュタグ */}
+      {post.tags?.length > 0 && (
+        <div className="post-tags">
+          {post.tags.map(tag => (
+            <button
+              key={tag}
+              className={`post-tag-btn ${activeTag === tag ? 'active' : ''}`}
+              onClick={() => onTagClick(activeTag === tag ? null : tag)}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* LEX AI自動回答 */}
+      {postType === 'question' && post.aiResponse && (
+        <div className="ai-answer-card">
+          <div className="ai-answer-header">🐆 LEX AI からの回答</div>
+          <p className="ai-answer-text">{post.aiResponse}</p>
+        </div>
+      )}
+      {postType === 'question' && !post.aiResponse && (
+        <div className="ai-answer-pending">🐆 LEX AI が回答を準備中...</div>
       )}
 
       <div className="post-actions">
@@ -347,52 +406,173 @@ const ExternalCard = ({ post }) => {
 };
 
 // ── 新規投稿モーダル ──────────────────────────
-const PostModal = ({ user, onClose }) => {
+const PostModal = ({ user, phones, onClose }) => {
   const [body, setBody] = useState('');
-  const [tag, setTag] = useState('review');
+  const [postType, setPostType] = useState('general');
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
+  const [selectedPhoneId, setSelectedPhoneId] = useState('');
+  const [purchasePlace, setPurchasePlace] = useState('');
+  const [purchasePrice, setPurchasePrice] = useState('');
+  const [salePrice, setSalePrice] = useState('');
+  const [saleUrl, setSaleUrl] = useState('');
+  const [saleDeadline, setSaleDeadline] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!body.trim()) return;
     setSubmitting(true);
-    await addDoc(collection(db, 'posts'), {
-      uid: user.uid,
-      username: user.displayName || 'ユーザー',
-      avatarInitials: (user.displayName?.[0] || 'U').toUpperCase(),
-      body: body.trim(),
-      imageUrl: null,
-      tag,
-      likeCount: 0,
-      likedBy: [],
-      commentCount: 0,
-      createdAt: serverTimestamp(),
-    });
-    setSubmitting(false);
-    onClose();
+    try {
+      const selectedPhone = phones.find(p => p.id === selectedPhoneId);
+      const postData = {
+        uid: user.uid,
+        username: user.displayName || 'ユーザー',
+        avatarInitials: (user.displayName?.[0] || 'U').toUpperCase(),
+        body: body.trim(),
+        imageUrl: null,
+        tag: postType === 'question' ? 'question' : postType === 'purchase' ? 'review' : postType === 'sale' ? 'deal' : 'review',
+        likeCount: 0,
+        likedBy: [],
+        commentCount: 0,
+        createdAt: serverTimestamp(),
+        postType,
+        tags,
+        ...(postType === 'purchase' && selectedPhone ? {
+          phoneId: selectedPhone.id,
+          phoneName: selectedPhone.name,
+          purchasePlace: purchasePlace.trim(),
+          purchasePrice: Number(purchasePrice) || 0,
+        } : {}),
+        ...(postType === 'sale' && selectedPhone ? {
+          salePhoneId: selectedPhone.id,
+          salePhoneName: selectedPhone.name,
+          salePrice: Number(salePrice) || 0,
+          saleUrl: saleUrl.trim(),
+          saleDeadline: saleDeadline.trim(),
+        } : {}),
+      };
+
+      const docRef = await addDoc(collection(db, 'posts'), postData);
+
+      // 購入相談の場合はLEX AIが自動回答
+      if (postType === 'question') {
+        fetchAiAnswer(body.trim(), docRef.id);
+      }
+
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleTagKeyDown = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      const newTag = tagInput.trim().replace(/^#/, '').slice(0, 20);
+      if (newTag && !tags.includes(newTag) && tags.length < 5) {
+        setTags(prev => [...prev, newTag]);
+      }
+      setTagInput('');
+    }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">新規投稿</div>
-        <div className="modal-tag-row">
-          {TAGS.map((t) => (
+
+        {/* 投稿タイプ選択 */}
+        <div className="post-type-selector">
+          {[
+            { id: 'general',  label: '💬 通常' },
+            { id: 'question', label: '🙋 相談' },
+            { id: 'purchase', label: '📦 購入レポ' },
+            { id: 'sale',     label: '💰 セール' },
+          ].map(t => (
             <button
-              key={t}
-              className={`tag-btn ${tag === t ? 'active' : ''}`}
-              onClick={() => setTag(t)}
+              key={t.id}
+              className={`post-type-btn ${postType === t.id ? 'active' : ''}`}
+              onClick={() => setPostType(t.id)}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
+
+        {postType === 'question' && (
+          <p className="form-hint">🐆 投稿するとLEX AIが自動で回答します</p>
+        )}
+
+        {/* 機種選択 */}
+        {(postType === 'purchase' || postType === 'sale') && (
+          <select
+            className="form-select"
+            value={selectedPhoneId}
+            onChange={e => setSelectedPhoneId(e.target.value)}
+          >
+            <option value="">機種を選択...</option>
+            {phones.map(p => (
+              <option key={p.id} value={p.id}>{p.name} — {p.brand}</option>
+            ))}
+          </select>
+        )}
+
+        {/* 購入レポ専用 */}
+        {postType === 'purchase' && (
+          <div className="form-extra-fields">
+            <input className="form-input" placeholder="購入場所（例: AliExpress、Amazon）"
+              value={purchasePlace} onChange={e => setPurchasePlace(e.target.value)} />
+            <input className="form-input" type="number" placeholder="購入価格（円）"
+              value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
+          </div>
+        )}
+
+        {/* セール専用 */}
+        {postType === 'sale' && (
+          <div className="form-extra-fields">
+            <input className="form-input" type="number" placeholder="セール価格（円）"
+              value={salePrice} onChange={e => setSalePrice(e.target.value)} />
+            <input className="form-input" placeholder="セールページURL"
+              value={saleUrl} onChange={e => setSaleUrl(e.target.value)} />
+            <input className="form-input" placeholder="期限（例: 5/31まで）任意"
+              value={saleDeadline} onChange={e => setSaleDeadline(e.target.value)} />
+          </div>
+        )}
+
         <textarea
           className="modal-textarea"
-          placeholder="内容を入力..."
+          placeholder={
+            postType === 'question' ? '例: 予算5万円でカメラ重視です。Xiaomi vs OPPOどちらがいいですか？' :
+            postType === 'purchase' ? '購入した感想・レビューを書いてください' :
+            postType === 'sale'     ? 'セール情報の詳細を書いてください' :
+            '内容を入力...'
+          }
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          rows={5}
+          rows={4}
         />
+
+        {/* ハッシュタグ */}
+        <div className="tag-input-wrap">
+          <input
+            className="tag-input"
+            placeholder="タグを追加（Enterで確定）例: Xiaomi"
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={handleTagKeyDown}
+          />
+          {tags.length > 0 && (
+            <div className="tag-list">
+              {tags.map(tag => (
+                <span key={tag} className="tag-badge">
+                  #{tag}
+                  <button className="tag-remove" onClick={() => setTags(prev => prev.filter(t => t !== tag))}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="modal-actions">
           <button className="modal-cancel-btn" onClick={onClose}>キャンセル</button>
           <button
@@ -408,6 +588,28 @@ const PostModal = ({ user, onClose }) => {
   );
 };
 
+// AI自動回答（非同期で実行）
+const fetchAiAnswer = async (question, postId) => {
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'あなたはLEXPANTHERというスマートフォン販売アプリの執事型AIアシスタントです。ユーザーのスマートフォン購入相談に対して、丁寧かつ具体的にアドバイスしてください。予算・用途・好みを考慮した上で、200文字以内で端的に回答してください。',
+        messages: [{ role: 'user', content: question }],
+      }),
+    });
+    const data = await res.json();
+    const answer = data.content?.[0]?.text || '申し訳ございません。回答を生成できませんでした。';
+    await updateDoc(doc(db, 'posts', postId), {
+      aiResponse: answer,
+      aiAnsweredAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error('AI answer error:', err);
+  }
+};
+
 // ── ログイン促進バナー ────────────────────────
 const LoginBanner = ({ onLogin }) => (
   <div className="login-banner">
@@ -419,8 +621,8 @@ const LoginBanner = ({ onLogin }) => (
 // ── メイン ───────────────────────────────────
 const CommunityScreen = () => {
   const { user, signIn } = useAuth();
-  const [activeSource, setActiveSource] = useState('');
-  const [activeTag, setActiveTag] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeTag, setActiveTag] = useState(null);
   const [keyword, setKeyword] = useState('');
   const [firestorePosts, setFirestorePosts] = useState([]);
   const [redditPosts, setRedditPosts] = useState([]);
@@ -429,6 +631,7 @@ const CommunityScreen = () => {
   const [externalError, setExternalError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState(false);
+  const [phones, setPhones] = useState([]);
 
   // Firestore リアルタイム購読
   useEffect(() => {
@@ -439,14 +642,21 @@ const CommunityScreen = () => {
     return () => unsub();
   }, []);
 
+  // phones コレクション読み込み
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'phones'), snap => {
+      setPhones(snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || '')));
+    });
+    return () => unsub();
+  }, []);
+
   // Reddit + YouTube 初回取得
   useEffect(() => {
     Promise.allSettled([fetchRedditPosts(), fetchYouTubeComments()]).then(
       ([redditResult, ytResult]) => {
         if (redditResult.status === 'fulfilled') setRedditPosts(redditResult.value);
-        else console.error('Reddit fetch failed:', redditResult.reason);
         if (ytResult.status === 'fulfilled') setYtComments(ytResult.value);
-        else console.error('YouTube fetch failed:', ytResult.reason);
         const bothFailed =
           redditResult.status === 'rejected' && ytResult.status === 'rejected';
         if (bothFailed) setExternalError('Reddit・YouTubeの読み込みに失敗しました');
@@ -477,23 +687,38 @@ const CommunityScreen = () => {
 
   const filteredPosts = useMemo(() => {
     return allPosts.filter((p) => {
-      const matchSource = !activeSource || p.source === activeSource;
-      const matchTag =
-        p.source !== 'user' || !activeTag || p.tag === activeTag;
-      const matchKeyword =
-        !keyword ||
-        (p.body || '').toLowerCase().includes(keyword.toLowerCase()) ||
-        (p.title || '').toLowerCase().includes(keyword.toLowerCase()) ||
-        (p.username || '').toLowerCase().includes(keyword.toLowerCase());
-      return matchSource && matchTag && matchKeyword;
-    });
-  }, [allPosts, activeSource, activeTag, keyword]);
+      // カテゴリフィルター
+      if (activeCategory === 'question') return p.source === 'user' && p.postType === 'question';
+      if (activeCategory === 'purchase') return p.source === 'user' && p.postType === 'purchase';
+      if (activeCategory === 'sale') return p.source === 'user' && p.postType === 'sale';
+      if (activeCategory === 'reddit') return p.source === 'reddit';
+      if (activeCategory === 'youtube') return p.source === 'youtube';
+      // 'all' はすべて表示
 
-  const SOURCES = [
-    { key: '', label: '全て' },
-    { key: 'user', label: 'ユーザー投稿' },
-    { key: 'reddit', label: 'Reddit' },
-    { key: 'youtube', label: 'YouTube' },
+      return true;
+    }).filter((p) => {
+      // タグフィルター
+      if (activeTag && !(p.tags || []).includes(activeTag)) return false;
+      // キーワード検索
+      if (keyword) {
+        const kw = keyword.toLowerCase();
+        const matchText = (p.body || '').toLowerCase().includes(kw) ||
+          (p.title || '').toLowerCase().includes(kw) ||
+          (p.username || '').toLowerCase().includes(kw) ||
+          (p.tags || []).some(t => t.toLowerCase().includes(kw));
+        if (!matchText) return false;
+      }
+      return true;
+    });
+  }, [allPosts, activeCategory, activeTag, keyword]);
+
+  const CATEGORIES = [
+    { id: 'all',      label: '全て' },
+    { id: 'question', label: '🙋 相談' },
+    { id: 'purchase', label: '📦 購入レポ' },
+    { id: 'sale',     label: '💰 セール' },
+    { id: 'reddit',   label: 'Reddit' },
+    { id: 'youtube',  label: 'YouTube' },
   ];
 
   return (
@@ -521,19 +746,19 @@ const CommunityScreen = () => {
       )}
 
       {modalOpen && user && (
-        <PostModal user={user} onClose={() => setModalOpen(false)} />
+        <PostModal user={user} phones={phones} onClose={() => setModalOpen(false)} />
       )}
 
-      {/* ソースフィルター */}
+      {/* カテゴリフィルター */}
       <div className="source-filter-row">
-        {SOURCES.map((s) => (
+        {CATEGORIES.map((c) => (
           <button
-            key={s.key}
-            className={`source-filter-btn ${activeSource === s.key ? 'active' : ''}`}
-            onClick={() => setActiveSource(s.key)}
+            key={c.id}
+            className={`source-filter-btn ${activeCategory === c.id ? 'active' : ''}`}
+            onClick={() => { setActiveCategory(c.id); setActiveTag(null); }}
           >
-            {s.label}
-            {s.key === 'reddit' && externalLoading && (
+            {c.label}
+            {(c.id === 'reddit' || c.id === 'youtube') && externalLoading && (
               <span className="loading-dot"> ···</span>
             )}
           </button>
@@ -543,29 +768,15 @@ const CommunityScreen = () => {
       <input
         className="community-search"
         type="text"
-        placeholder="キーワードで検索..."
+        placeholder="キーワード・タグで検索..."
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />
 
-      {/* タグフィルター（ユーザー投稿表示時のみ） */}
-      {(activeSource === '' || activeSource === 'user') && (
-        <div className="tag-row">
-          <button
-            className={`tag-btn ${activeTag === '' ? 'active' : ''}`}
-            onClick={() => setActiveTag('')}
-          >
-            ALL
-          </button>
-          {TAGS.map((tag) => (
-            <button
-              key={tag}
-              className={`tag-btn ${activeTag === tag ? 'active' : ''}`}
-              onClick={() => setActiveTag(tag)}
-            >
-              {tag}
-            </button>
-          ))}
+      {activeTag && (
+        <div className="active-tag-bar">
+          <span>タグ: #{activeTag}</span>
+          <button className="clear-tag-btn" onClick={() => setActiveTag(null)}>× クリア</button>
         </div>
       )}
 
@@ -587,6 +798,8 @@ const CommunityScreen = () => {
               post={post}
               user={user}
               onLoginRequest={handleLoginRequest}
+              onTagClick={setActiveTag}
+              activeTag={activeTag}
             />
           ) : (
             <ExternalCard key={post.id} post={post} />

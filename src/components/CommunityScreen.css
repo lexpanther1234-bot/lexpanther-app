@@ -633,3 +633,367 @@
 .external-link-btn:hover {
   border-color: #00ff88;
 }
+
+/* ── 投稿タイプ選択 ── */
+.post-type-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.post-type-btn {
+  flex: 1;
+  background: #0d0d0d;
+  border: 1px solid #222;
+  border-radius: 8px;
+  color: #666;
+  font-size: 11px;
+  padding: 7px 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Noto Sans JP', sans-serif;
+  white-space: nowrap;
+}
+
+.post-type-btn:hover {
+  border-color: #444;
+  color: #aaa;
+}
+
+.post-type-btn.active {
+  background: #1a2a1a;
+  border-color: #00ff88;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+/* ── 投稿タイプバッジ ── */
+.post-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+.badge-question {
+  background: #1a1a2e;
+  color: #7b8cff;
+  border: 1px solid #2a2a4a;
+}
+
+.badge-purchase {
+  background: #1a2e1a;
+  color: #66cc66;
+  border: 1px solid #2a4a2a;
+}
+
+.badge-sale {
+  background: #2e1a0d;
+  color: #ffaa44;
+  border: 1px solid #4a2a10;
+}
+
+/* ── 投稿タイプ左ボーダー ── */
+.post-type-question {
+  border-left: 3px solid #7b8cff;
+}
+
+.post-type-purchase {
+  border-left: 3px solid #66cc66;
+}
+
+.post-type-sale {
+  border-left: 3px solid #ffaa44;
+}
+
+/* ── 購入レポ情報 ── */
+.post-purchase-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #0d1a0d;
+  border: 1px solid #1a3a1a;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.purchase-phone {
+  color: #66cc66;
+  font-weight: 600;
+}
+
+.purchase-place {
+  color: #aaa;
+}
+
+.purchase-price {
+  color: #00ff88;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* ── セール情報 ── */
+.post-sale-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #1a150d;
+  border: 1px solid #3a2a10;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.sale-phone {
+  color: #ffaa44;
+  font-weight: 600;
+}
+
+.sale-price {
+  color: #ff6644;
+  font-weight: 700;
+}
+
+.sale-deadline {
+  color: #888;
+  font-size: 11px;
+}
+
+.sale-link {
+  color: #ffaa44;
+  text-decoration: none;
+  font-size: 11px;
+  padding: 2px 8px;
+  border: 1px solid #3a2a10;
+  border-radius: 6px;
+  margin-left: auto;
+  transition: border-color 0.15s;
+}
+
+.sale-link:hover {
+  border-color: #ffaa44;
+}
+
+/* ── タグ入力 ── */
+.tag-input-wrap {
+  margin-bottom: 14px;
+}
+
+.tag-input {
+  width: 100%;
+  background: #0d0d0d;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  box-sizing: border-box;
+}
+
+.tag-input:focus {
+  border-color: #00ff88;
+}
+
+.tag-input::placeholder {
+  color: #444;
+}
+
+.tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.tag-badge {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: #ff4466;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ── 投稿タグ ── */
+.post-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.post-tag-btn {
+  background: #0d1f0d;
+  color: #00cc66;
+  font-size: 10px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid #1a3a1a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.post-tag-btn:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.post-tag-btn.active {
+  background: #00ff88;
+  color: #000;
+  border-color: #00ff88;
+  font-weight: 700;
+}
+
+/* ── AI回答カード ── */
+.ai-answer-card {
+  background: #0d0d1a;
+  border: 1px solid #2a2a4a;
+  border-left: 3px solid #7b8cff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.ai-answer-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7b8cff;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.ai-answer-text {
+  font-size: 12px;
+  color: #ccc;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ai-answer-pending {
+  font-size: 11px;
+  color: #7b8cff;
+  padding: 8px 12px;
+  background: #0d0d1a;
+  border: 1px solid #2a2a4a;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* ── フォーム ── */
+.form-hint {
+  font-size: 11px;
+  color: #7b8cff;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  background: #0d0d1a;
+  border-radius: 6px;
+  border: 1px solid #2a2a4a;
+}
+
+.form-extra-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-input {
+  width: 100%;
+  background: #0d0d0d;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #00ff88;
+}
+
+.form-input::placeholder {
+  color: #444;
+}
+
+.form-select {
+  width: 100%;
+  background: #0d0d0d;
+  border: 1px solid #1a2a1a;
+  border-radius: 8px;
+  color: #e8e8e8;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2300cc66' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.form-select:focus {
+  border-color: #00ff88;
+}
+
+/* ── アクティブタグバー ── */
+.active-tag-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #0d1f0d;
+  border: 1px solid #1a3a1a;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #00cc66;
+}
+
+.clear-tag-btn {
+  background: none;
+  border: 1px solid #1a3a1a;
+  border-radius: 6px;
+  color: #888;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.clear-tag-btn:hover {
+  border-color: #ff4466;
+  color: #ff4466;
+}
