@@ -1,41 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './NewsScreen.css';
 
-// ─────────────────────────────────────────
-// RSSソース設定
-// rss2json.com を使ってCORSを回避
-// ─────────────────────────────────────────
 const RSS_SOURCES = [
-  {
-    id: 'gsm',
-    name: 'GSMArena',
-    url: 'https://www.gsmarena.com/rss-news-reviews.php3',
-    badge: 'badge-gsm',
-  },
-  {
-    id: 'verge',
-    name: 'The Verge',
-    url: 'https://www.theverge.com/rss/index.xml',
-    badge: 'badge-verge',
-  },
-  {
-    id: '9to5g',
-    name: '9to5Google',
-    url: 'https://9to5google.com/feed',
-    badge: 'badge-9to5g',
-  },
-  {
-    id: '9to5m',
-    name: '9to5Mac',
-    url: 'https://9to5mac.com/feed',
-    badge: 'badge-9to5m',
-  },
-  {
-    id: 'pa',
-    name: 'PhoneArena',
-    url: 'https://www.phonearena.com/news/rss',
-    badge: 'badge-pa',
-  },
+  { id: 'gsm',   name: 'GSMArena',   url: 'https://www.gsmarena.com/rss-news-reviews.php3', badge: 'badge-gsm' },
+  { id: 'verge', name: 'The Verge',  url: 'https://www.theverge.com/rss/index.xml',         badge: 'badge-verge' },
+  { id: '9to5g', name: '9to5Google', url: 'https://9to5google.com/feed',                    badge: 'badge-9to5g' },
+  { id: '9to5m', name: '9to5Mac',    url: 'https://9to5mac.com/feed',                       badge: 'badge-9to5m' },
+  { id: 'pa',    name: 'PhoneArena', url: 'https://www.phonearena.com/news/rss',             badge: 'badge-pa' },
 ];
 
 const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
@@ -53,65 +24,48 @@ const translateArticle = async (title, description) => {
 };
 
 // ── ニュースカード ──────────────────────────
-const NewsCard = ({ item }) => {
+const NewsCard = ({ item, translation }) => {
   const [expanded, setExpanded] = useState(false);
-  const [translated, setTranslated] = useState(null);
-  const [translating, setTranslating] = useState(false);
-
   const source = RSS_SOURCES.find((s) => s.id === item.sourceId);
 
-  const handleTap = async () => {
-    if (!expanded && !translated) {
-      setExpanded(true);
-      setTranslating(true);
-      try {
-        const result = await translateArticle(item.title, item.description);
-        setTranslated(result);
-      } catch (e) {
-        setTranslated({ title: item.title, description: item.description });
-      } finally {
-        setTranslating(false);
-      }
-    } else {
-      setExpanded((v) => !v);
-    }
-  };
+  const displayTitle = translation?.title || item.title;
+  const isTranslating = !translation;
 
   return (
-    <div className={`news-card ${expanded ? 'expanded' : ''}`} onClick={handleTap}>
+    <div className={`news-card ${expanded ? 'expanded' : ''}`} onClick={() => setExpanded(v => !v)}>
       <div className="news-card-main">
         {item.thumbnail ? (
-          <img className="news-thumb" src={item.thumbnail} alt={item.title} onError={(e) => e.target.style.display='none'} />
+          <img className="news-thumb" src={item.thumbnail} alt="" onError={(e) => e.target.style.display='none'} />
         ) : (
           <div className="news-thumb news-thumb-placeholder">📱</div>
         )}
         <div className="news-body">
           <span className={`news-source-badge ${source?.badge}`}>{source?.name?.toUpperCase()}</span>
-          <div className="news-title">{item.title}</div>
+          <div className="news-title">
+            {isTranslating && <span className="news-translating-dot">●</span>}
+            {displayTitle}
+          </div>
           <div className="news-meta">
             <span className="news-date">{new Date(item.pubDate).toLocaleDateString('ja-JP')}</span>
-            <span className="news-expand-hint">{expanded ? '▲ 閉じる' : '▼ 日本語で読む'}</span>
+            <span className="news-expand-hint">{expanded ? '▲ 閉じる' : '▼ 詳細'}</span>
           </div>
         </div>
       </div>
 
       {expanded && (
         <div className="news-detail" onClick={(e) => e.stopPropagation()}>
-          {translating ? (
+          {isTranslating ? (
             <div className="translating">
               <div className="typing"><span></span><span></span><span></span></div>
-              <span>LEXが翻訳中でございます...</span>
+              <span>翻訳中...</span>
             </div>
-          ) : translated ? (
+          ) : (
             <>
-              <h3 className="news-detail-title">{translated.title}</h3>
-              <p className="news-detail-body">{translated.description}</p>
+              <h3 className="news-detail-title">{translation.title}</h3>
+              <p className="news-detail-body">{translation.description}</p>
             </>
-          ) : null}
-          <button
-            className="news-open-btn"
-            onClick={() => window.open(item.link, '_blank')}
-          >
+          )}
+          <button className="news-open-btn" onClick={() => window.open(item.link, '_blank')}>
             元記事を開く →
           </button>
         </div>
@@ -125,7 +79,10 @@ const NewsScreen = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSource, setActiveSource] = useState('all');
+  const [translations, setTranslations] = useState({});
+  const translatingRef = useRef(false);
 
+  // 記事取得
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
@@ -153,9 +110,34 @@ const NewsScreen = () => {
       setArticles(allArticles);
       setLoading(false);
     };
-
     fetchAll();
   }, []);
+
+  // 記事取得後に自動翻訳（順次実行でレート制限回避）
+  useEffect(() => {
+    if (articles.length === 0 || translatingRef.current) return;
+    translatingRef.current = true;
+
+    const translateAll = async () => {
+      for (const article of articles) {
+        // 既に翻訳済みならスキップ
+        if (translations[article.id]) continue;
+        try {
+          const result = await translateArticle(article.title, article.description);
+          setTranslations(prev => ({ ...prev, [article.id]: result }));
+        } catch (e) {
+          // 失敗時は原文をそのまま使う
+          setTranslations(prev => ({
+            ...prev,
+            [article.id]: { title: article.title, description: (article.description || '').replace(/<[^>]*>/g, '') },
+          }));
+        }
+      }
+      translatingRef.current = false;
+    };
+    translateAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articles]);
 
   const filtered = activeSource === 'all'
     ? articles
@@ -189,7 +171,7 @@ const NewsScreen = () => {
         <p className="news-loading">記事が見つかりませんでした</p>
       ) : (
         filtered.map((item) => (
-          <NewsCard key={item.id} item={item} />
+          <NewsCard key={item.id} item={item} translation={translations[item.id]} />
         ))
       )}
     </div>

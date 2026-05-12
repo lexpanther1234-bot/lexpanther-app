@@ -222,3 +222,16 @@
   text-align: center;
   padding: 40px 0;
 }
+
+/* 翻訳中インジケーター */
+.news-translating-dot {
+  color: #00ff88;
+  font-size: 8px;
+  margin-right: 4px;
+  animation: pulse-dot 1.2s infinite;
+  vertical-align: middle;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
