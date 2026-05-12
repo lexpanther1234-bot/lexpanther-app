@@ -11,12 +11,23 @@ import {
   query,
   orderBy,
   getDocs,
+  getDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './CommunityScreen.css';
 
 const SUBREDDITS = ['Android', 'iphone', 'Smartphones'];
+
+const simpleHash = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+};
 
 // ── ヘルパー ──────────────────────────────────
 const formatTime = (ts) => {
@@ -588,21 +599,45 @@ const PostModal = ({ user, phones, onClose }) => {
   );
 };
 
-// AI自動回答（非同期で実行）
+// AI自動回答（非同期で実行・Firestoreキャッシュ対応）
 const fetchAiAnswer = async (question, postId) => {
   try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system: 'あなたはLEXPANTHERというスマートフォン販売アプリの執事型AIアシスタントです。ユーザーのスマートフォン購入相談に対して、丁寧かつ具体的にアドバイスしてください。予算・用途・好みを考慮した上で、200文字以内で端的に回答してください。',
-        messages: [{ role: 'user', content: question }],
-      }),
-    });
-    const data = await res.json();
-    const answer = data.content?.[0]?.text || '申し訳ございません。回答を生成できませんでした。';
+    const questionHash = simpleHash(question.trim());
+
+    // ① Firestoreキャッシュを確認
+    const cacheRef = doc(db, 'aiAnswerCache', questionHash);
+    const cacheSnap = await getDoc(cacheRef);
+
+    let answer;
+    if (cacheSnap.exists()) {
+      answer = cacheSnap.data().answerText;
+    } else {
+      // ② キャッシュがなければGemini APIを呼び出す
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: 'あなたはLEXPANTHERというスマートフォン販売アプリの執事型AIアシスタントです。ユーザーのスマートフォン購入相談に対して、丁寧かつ具体的にアドバイスしてください。予算・用途・好みを考慮した上で、200文字以内で端的に回答してください。',
+          messages: [{ role: 'user', content: question }],
+        }),
+      });
+      const data = await res.json();
+      answer = data.content?.[0]?.text || '申し訳ございません。回答を生成できませんでした。';
+
+      // ③ 生成結果をFirestoreに保存
+      if (answer && answer !== '申し訳ございません。回答を生成できませんでした。') {
+        await setDoc(cacheRef, {
+          question:   question.trim(),
+          answerText: answer,
+          createdAt:  serverTimestamp(),
+          model:      'gemini-2.5-flash',
+        });
+      }
+    }
+
+    // 投稿ドキュメントにAI回答を保存
     await updateDoc(doc(db, 'posts', postId), {
-      aiResponse: answer,
+      aiResponse:   answer,
       aiAnsweredAt: serverTimestamp(),
     });
   } catch (err) {

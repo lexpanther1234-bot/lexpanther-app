@@ -388,6 +388,16 @@ const CompareScreen = () => {
     setAiLoading(true);
     setAiReview('');
     try {
+      // ① Firestoreキャッシュを確認
+      const cacheRef = doc(db, 'aiReviewCache', reviewPhone.id);
+      const cacheSnap = await getDoc(cacheRef);
+
+      if (cacheSnap.exists()) {
+        setAiReview(cacheSnap.data().reviewText);
+        return;
+      }
+
+      // ② キャッシュがなければGemini APIを呼び出す
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -400,7 +410,18 @@ const CompareScreen = () => {
         }),
       });
       const data = await res.json();
-      setAiReview(data.content?.[0]?.text || 'レビューを生成できませんでした。');
+      const text = data.content?.[0]?.text || 'レビューを生成できませんでした。';
+      setAiReview(text);
+
+      // ③ 生成結果をFirestoreに保存
+      if (text && text !== 'レビューを生成できませんでした。') {
+        await setDoc(cacheRef, {
+          phoneId:    reviewPhone.id,
+          reviewText: text,
+          createdAt:  serverTimestamp(),
+          model:      'gemini-2.5-flash',
+        });
+      }
     } catch {
       setAiReview('レビュー生成に失敗しました。');
     } finally {

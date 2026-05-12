@@ -328,6 +328,10 @@ const AdminScreen = () => {
                 </div>
                 <div className="admin-item-actions">
                   <button className="admin-edit-btn" onClick={() => startEdit(phone)}>編集</button>
+                  <button className="admin-cache-clear-btn" onClick={async () => {
+                    await deleteDoc(doc(db, 'aiReviewCache', phone.id));
+                    alert('AIレビューキャッシュを削除しました。');
+                  }}>🗑 AICache</button>
                   <button className="admin-delete-btn" onClick={() => handleDelete(phone.id)}>削除</button>
                 </div>
               </div>
