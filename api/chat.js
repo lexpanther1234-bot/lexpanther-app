@@ -28,7 +28,7 @@ export default async function handler(req, res) {
         parts: [{ text: m.content }],
       })),
       generationConfig: {
-        maxOutputTokens: 1024,
+        maxOutputTokens: 4096,
         temperature:     0.7,
       },
     };
