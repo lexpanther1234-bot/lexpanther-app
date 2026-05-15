@@ -485,7 +485,7 @@ const CompareScreen = () => {
     }
   };
 
-  // Auto-translate Reddit posts to Japanese
+  // Auto-translate Reddit posts to Japanese (Groq LLM経由)
   useEffect(() => {
     if (redditPosts.length === 0) return;
     let cancelled = false;
@@ -494,19 +494,30 @@ const CompareScreen = () => {
       for (const post of redditPosts) {
         if (cancelled) break;
         try {
-          const text = (post.title + '. ' + (post.selftext || '').slice(0, 400)).slice(0, 500);
-          const res = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ja`
-          );
+          const title = post.title || '';
+          const description = (post.selftext || '').slice(0, 800);
+          const res = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description }),
+          });
+          if (!res.ok) throw new Error('Translation failed');
           const data = await res.json();
-          if (!cancelled && data?.responseData?.translatedText) {
+          if (!cancelled) {
+            const translated = [data.title, data.description].filter(Boolean).join('\n');
             setRedditTranslations(prev => ({
               ...prev,
-              [post.id]: data.responseData.translatedText,
+              [post.id]: translated || title,
             }));
           }
         } catch (err) {
           console.error('Translation error:', err);
+          if (!cancelled) {
+            setRedditTranslations(prev => ({
+              ...prev,
+              [post.id]: post.title,
+            }));
+          }
         }
       }
     };
