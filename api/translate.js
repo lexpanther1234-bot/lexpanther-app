@@ -4,8 +4,8 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'DEEPSEEK_API_KEY not configured' });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
 
   const { title, description } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
@@ -15,33 +15,35 @@ export default async function handler(req, res) {
     : `タイトル: ${title}`;
 
   try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+    const body = {
+      system_instruction: {
+        parts: [{ text: '英語のニュース記事を自然な日本語に翻訳してください。JSON形式で返してください: {"title":"翻訳されたタイトル","description":"翻訳された本文"}。翻訳以外の文章は一切出力しないでください。' }]
       },
-      body: JSON.stringify({
-        model: 'deepseek-v4-flash',
-        messages: [
-          {
-            role: 'system',
-            content: '英語のニュース記事を自然な日本語に翻訳してください。JSON形式で返してください: {"title":"翻訳されたタイトル","description":"翻訳された本文"}。翻訳以外の文章は一切出力しないでください。',
-          },
-          { role: 'user', content: textToTranslate },
-        ],
-        max_tokens: 1024,
+      contents: [
+        { role: 'user', parts: [{ text: textToTranslate }] }
+      ],
+      generationConfig: {
+        maxOutputTokens: 1024,
         temperature: 0.3,
-      }),
-    });
+      },
+    };
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+    );
 
     const data = await response.json();
     if (!response.ok) {
-      console.error('DeepSeek translate error:', JSON.stringify(data));
+      console.error('Gemini translate error:', JSON.stringify(data));
       return res.status(500).json({ error: 'Translation failed' });
     }
 
-    const text = data.choices?.[0]?.message?.content || '';
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // JSONパース試行
     try {
