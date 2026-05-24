@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './RepairScreen.css';
 
@@ -22,6 +23,9 @@ const PRICE_GUIDE = [
   { label: 'カメラ修理',       price: '¥8,000〜12,000' },
 ];
 
+const MAX_PHOTOS = 4;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 const RepairScreen = () => {
   const { user } = useAuth();
   const [phoneName,        setPhoneName]        = useState('');
@@ -31,13 +35,61 @@ const RepairScreen = () => {
   const [name,             setName]             = useState('');
   const [email,            setEmail]            = useState(user?.email || '');
   const [tel,              setTel]              = useState('');
+  const [photos,           setPhotos]           = useState([]); // { file, preview }
   const [submitting,       setSubmitting]       = useState(false);
   const [submitted,        setSubmitted]        = useState(false);
+  const fileInputRef = useRef(null);
 
   const toggleSymptom = (id) => {
     setSelectedSymptoms(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+  };
+
+  const handlePhotoAdd = (e) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_PHOTOS - photos.length;
+    const toAdd = files.slice(0, remaining);
+
+    const valid = toAdd.filter(f => {
+      if (!f.type.startsWith('image/')) {
+        alert('画像ファイルのみ添付できます。');
+        return false;
+      }
+      if (f.size > MAX_FILE_SIZE) {
+        alert(`${f.name} は5MBを超えています。`);
+        return false;
+      }
+      return true;
+    });
+
+    const newPhotos = valid.map(f => ({
+      file: f,
+      preview: URL.createObjectURL(f),
+    }));
+    setPhotos(prev => [...prev, ...newPhotos]);
+    // input をリセット（同じファイルを再選択可能にする）
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removePhoto = (index) => {
+    setPhotos(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const uploadPhotos = async () => {
+    if (photos.length === 0) return [];
+    const urls = [];
+    for (const photo of photos) {
+      const fileName = `repair/${Date.now()}_${Math.random().toString(36).slice(2)}_${photo.file.name}`;
+      const storageRef = ref(storage, fileName);
+      await uploadBytes(storageRef, photo.file);
+      const url = await getDownloadURL(storageRef);
+      urls.push(url);
+    }
+    return urls;
   };
 
   const handleSubmit = async () => {
@@ -48,6 +100,9 @@ const RepairScreen = () => {
     }
     setSubmitting(true);
     try {
+      // 写真をアップロード
+      const photoUrls = await uploadPhotos();
+
       await addDoc(collection(db, 'repairRequests'), {
         userId:    user?.uid || null,
         phoneName: finalPhone,
@@ -56,9 +111,12 @@ const RepairScreen = () => {
         name:      name.trim(),
         email:     email.trim(),
         phone:     tel.trim(),
+        photoUrls,
         status:    'pending',
         createdAt: serverTimestamp(),
       });
+      // プレビューURLを解放
+      photos.forEach(p => URL.revokeObjectURL(p.preview));
       setSubmitted(true);
     } catch (err) {
       console.error('Repair submit error:', err);
@@ -75,7 +133,17 @@ const RepairScreen = () => {
           <div className="success-icon">✅</div>
           <div className="success-title">申し込み完了</div>
           <p className="success-text">24時間以内にメールにてご連絡いたします。</p>
-          <button className="success-back" onClick={() => setSubmitted(false)}>
+          <button className="success-back" onClick={() => {
+            setSubmitted(false);
+            setPhotos([]);
+            setPhoneName('');
+            setCustomPhone('');
+            setSelectedSymptoms([]);
+            setDetail('');
+            setName('');
+            setEmail(user?.email || '');
+            setTel('');
+          }}>
             新しい申し込みをする
           </button>
         </div>
@@ -134,8 +202,34 @@ const RepairScreen = () => {
         ))}
       </div>
 
-      {/* Step 3: 詳細・連絡先 */}
-      <div className="repair-step-label"><span className="step-num">3</span> 詳細・連絡先</div>
+      {/* Step 3: 写真添付 */}
+      <div className="repair-step-label"><span className="step-num">3</span> 写真を添付（最大{MAX_PHOTOS}枚）</div>
+      <div className="photo-upload-area">
+        {photos.map((p, i) => (
+          <div key={i} className="photo-thumb">
+            <img src={p.preview} alt={`添付${i + 1}`} />
+            <button className="photo-remove" onClick={() => removePhoto(i)}>✕</button>
+          </div>
+        ))}
+        {photos.length < MAX_PHOTOS && (
+          <button className="photo-add-btn" onClick={() => fileInputRef.current?.click()}>
+            <span className="photo-add-icon">📷</span>
+            <span className="photo-add-text">追加</span>
+          </button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          style={{ display: 'none' }}
+          onChange={handlePhotoAdd}
+        />
+      </div>
+      <p className="photo-hint">故障箇所の写真があると、より正確なお見積もりが可能です</p>
+
+      {/* Step 4: 詳細・連絡先 */}
+      <div className="repair-step-label"><span className="step-num">4</span> 詳細・連絡先</div>
       <textarea
         className="repair-textarea"
         placeholder="症状の詳細（いつから・どのような状況で発生したか等）任意"
@@ -148,7 +242,7 @@ const RepairScreen = () => {
       <input className="repair-input" type="tel" placeholder="電話番号（任意）" value={tel} onChange={e => setTel(e.target.value)} />
 
       <button className="repair-submit-btn" onClick={handleSubmit} disabled={submitting}>
-        {submitting ? '送信中...' : '修理を申し込む →'}
+        {submitting ? (photos.length > 0 ? '写真アップロード中...' : '送信中...') : '修理を申し込む →'}
       </button>
       <p className="repair-note">申し込み後、24時間以内にメールにてご連絡します</p>
     </div>

@@ -481,6 +481,15 @@ const AdminScreen = () => {
                   症状: {req.symptoms?.join(', ')} · {req.name} · {req.email}
                 </div>
                 {req.detail && <div className="admin-item-meta" style={{ color: '#666' }}>{req.detail}</div>}
+                {req.photoUrls?.length > 0 && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    {req.photoUrls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`添付${i + 1}`} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #222' }} />
+                      </a>
+                    ))}
+                  </div>
+                )}
                 <div className="admin-item-meta" style={{ color: '#444' }}>
                   {req.createdAt?.toDate?.()?.toLocaleString('ja-JP') || '—'}
                 </div>

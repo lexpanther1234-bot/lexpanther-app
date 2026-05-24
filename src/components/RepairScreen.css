@@ -102,6 +102,64 @@
   background: linear-gradient(135deg, rgba(0,255,136,0.22), rgba(0,200,100,0.14));
 }
 .repair-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 写真添付 */
+.photo-upload-area {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.photo-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #222;
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid #444;
+  color: #ff5050;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-add-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  border: 1.5px dashed #333;
+  background: #111;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.2s;
+}
+.photo-add-btn:hover {
+  border-color: #00ff88;
+  background: rgba(0,255,136,0.04);
+}
+.photo-add-icon { font-size: 20px; }
+.photo-add-text { color: #555; font-size: 9px; }
+.photo-hint { color: #333; font-size: 10px; margin-bottom: 12px; }
 .repair-note { color: #333; font-size: 11px; text-align: center; margin-top: 10px; }
 
 /* 完了画面 */
