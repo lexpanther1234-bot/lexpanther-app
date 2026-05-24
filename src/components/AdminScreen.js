@@ -17,6 +17,7 @@ const EMPTY_PHONE = {
   scores: { overall: 0, fps: 0, camera: 0, battery: 0 },
   benchmarks: { antutu: 0, geekbench_single: 0, geekbench_multi: 0, dmark: 0 },
   weight: '', charge: '', shopUrl: '',
+  stock: 0, hasCase: false, hasGlass: false, tecApproved: true,
 };
 
 const EMPTY_INFLUENCER = {
@@ -109,6 +110,10 @@ const AdminScreen = () => {
       charge: phone.charge || '',
       shopUrl: phone.shopUrl || '',
       benchmarks: { ...EMPTY_PHONE.benchmarks, ...phone.benchmarks },
+      stock: phone.stock || 0,
+      hasCase: phone.hasCase || false,
+      hasGlass: phone.hasGlass || false,
+      tecApproved: phone.tecApproved !== false,
     });
   };
 
@@ -133,6 +138,10 @@ const AdminScreen = () => {
           geekbench_multi: Number(form.benchmarks?.geekbench_multi) || 0,
           dmark: Number(form.benchmarks?.dmark) || 0,
         },
+        stock: Number(form.stock) || 0,
+        hasCase: Boolean(form.hasCase),
+        hasGlass: Boolean(form.hasGlass),
+        tecApproved: Boolean(form.tecApproved),
       };
       await setDoc(doc(db, 'phones', id), data);
       setEditing(null);
@@ -294,6 +303,24 @@ const AdminScreen = () => {
               <label className="form-row">
                 <span>購入URL</span>
                 <input value={form.shopUrl} onChange={(e) => updateField('shopUrl', e.target.value)} />
+              </label>
+
+              <h4 className="form-section">SHOP設定</h4>
+              <label className="form-row">
+                <span>在庫数</span>
+                <input type="number" value={form.stock} onChange={(e) => updateField('stock', e.target.value)} placeholder="0=非表示" />
+              </label>
+              <label className="form-row" style={{ cursor: 'pointer' }}>
+                <span>ケースオプション</span>
+                <input type="checkbox" checked={form.hasCase} onChange={(e) => updateField('hasCase', e.target.checked)} style={{ width: 'auto' }} />
+              </label>
+              <label className="form-row" style={{ cursor: 'pointer' }}>
+                <span>保護ガラスオプション</span>
+                <input type="checkbox" checked={form.hasGlass} onChange={(e) => updateField('hasGlass', e.target.checked)} style={{ width: 'auto' }} />
+              </label>
+              <label className="form-row" style={{ cursor: 'pointer' }}>
+                <span>技適取得済み</span>
+                <input type="checkbox" checked={form.tecApproved} onChange={(e) => updateField('tecApproved', e.target.checked)} style={{ width: 'auto' }} />
               </label>
 
               <h4 className="form-section">スペック</h4>
