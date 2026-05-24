@@ -4,6 +4,9 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './ShopScreen.css';
 
+const OPTION_CASE_PRICE = 500;
+const OPTION_GLASS_PRICE = 500;
+
 const ACCESSORIES = [
   { id: 'acc-1', name: 'Spigen Tough Armor', maker: 'Spigen', price: 2980, type: 'accessory', emoji: '🛡️', spec: 'iPhone 16 Pro Max対応', url: 'https://www.spigen.com/jp/' },
   { id: 'acc-2', name: 'Anker MagGo Charger', maker: 'Anker', price: 4980, type: 'accessory', emoji: '🔋', spec: 'MagSafe対応 / 15W', url: 'https://www.ankerjapan.com/' },
@@ -22,6 +25,7 @@ const ShopScreen = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState(false);
   const [addingId, setAddingId] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'phones'), (snap) => {
@@ -36,6 +40,10 @@ const ShopScreen = () => {
           emoji: '📱',
           spec: `${data.specs?.display || ''} / ${data.specs?.cpu || ''} / ${data.specs?.camera || ''}`,
           url: data.shopUrl || '',
+          stock: data.stock || 0,
+          hasCase: data.hasCase || false,
+          hasGlass: data.hasGlass || false,
+          tecApproved: data.tecApproved !== false,
         };
       }));
     });
@@ -66,6 +74,17 @@ const ShopScreen = () => {
 
   const addToCart = async (product) => {
     if (!user) { setLoginPrompt(true); return; }
+
+    const opts = selectedOptions[product.id] || {};
+
+    // 技適なし機種は同意必須
+    if (product.type === 'phone' && !product.tecApproved && !opts.agreedTec) {
+      alert('技適に関する注意事項への同意が必要です。');
+      return;
+    }
+
+    const optionPrice = (opts.case ? OPTION_CASE_PRICE : 0) + (opts.glass ? OPTION_GLASS_PRICE : 0);
+
     setAddingId(product.id);
     try {
       await addDoc(collection(db, 'carts', user.uid, 'items'), {
@@ -74,6 +93,13 @@ const ShopScreen = () => {
         price: product.price,
         emoji: product.emoji,
         url: product.url,
+        options: {
+          case: opts.case || false,
+          glass: opts.glass || false,
+        },
+        optionPrice,
+        totalPrice: (product.price || 0) + optionPrice,
+        agreedTecApproval: opts.agreedTec || product.tecApproved || false,
         addedAt: serverTimestamp(),
       });
     } finally {
@@ -161,7 +187,106 @@ const ShopScreen = () => {
               <div className="product-body">
                 <div className="product-name">{p.name}</div>
                 <div className="product-maker">{p.maker}</div>
+
+                {/* バッジ */}
+                {p.type === 'phone' && (
+                  <div className="badge-row">
+                    <span className="badge badge-green">✓ 関税無料</span>
+                    <span className="badge badge-green">✓ 送料無料</span>
+                    {!p.tecApproved && <span className="badge badge-orange">⚠ 技適なし</span>}
+                    {p.stock > 0 && p.stock <= 5 && (
+                      <span className="badge badge-red">残り{p.stock}台</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="product-price">¥{p.price.toLocaleString()}</div>
+
+                {/* オプション選択 */}
+                {p.type === 'phone' && (p.hasCase || p.hasGlass) && (
+                  <div className="option-section">
+                    <div className="option-section-title">オプション選択</div>
+
+                    {p.hasCase && (
+                      <div
+                        className={`option-row ${selectedOptions[p.id]?.case ? 'selected' : ''}`}
+                        onClick={() => setSelectedOptions(prev => ({
+                          ...prev,
+                          [p.id]: { ...prev[p.id], case: !prev[p.id]?.case }
+                        }))}
+                      >
+                        <div className={`option-check ${selectedOptions[p.id]?.case ? 'checked' : ''}`}>
+                          {selectedOptions[p.id]?.case && '✓'}
+                        </div>
+                        <span className="option-icon">🎁</span>
+                        <div className="option-info">
+                          <div className="option-name">ランダムケース</div>
+                          <div className="option-desc">デザインはおまかせ・1個付属</div>
+                        </div>
+                        <span className="option-price">+¥{OPTION_CASE_PRICE}</span>
+                      </div>
+                    )}
+
+                    {p.hasGlass && (
+                      <div
+                        className={`option-row ${selectedOptions[p.id]?.glass ? 'selected' : ''}`}
+                        onClick={() => setSelectedOptions(prev => ({
+                          ...prev,
+                          [p.id]: { ...prev[p.id], glass: !prev[p.id]?.glass }
+                        }))}
+                      >
+                        <div className={`option-check ${selectedOptions[p.id]?.glass ? 'checked' : ''}`}>
+                          {selectedOptions[p.id]?.glass && '✓'}
+                        </div>
+                        <span className="option-icon">🛡</span>
+                        <div className="option-info">
+                          <div className="option-name">保護ガラスフィルム</div>
+                          <div className="option-desc">9H強化ガラス・貼り付け簡単</div>
+                        </div>
+                        <span className="option-price">+¥{OPTION_GLASS_PRICE}</span>
+                      </div>
+                    )}
+
+                    {!p.tecApproved && (
+                      <div className="teccheck-box">
+                        <span className="teccheck-icon">⚠️</span>
+                        <div>
+                          <p className="teccheck-text">
+                            この端末は日本の技術基準適合証明（技適）を取得していません。
+                            日本国内での通話・Wi-Fi・Bluetoothの使用は電波法に抵触する可能性があります。
+                          </p>
+                          <div
+                            className="teccheck-check"
+                            onClick={() => setSelectedOptions(prev => ({
+                              ...prev,
+                              [p.id]: { ...prev[p.id], agreedTec: !prev[p.id]?.agreedTec }
+                            }))}
+                          >
+                            <div className={`tec-checkbox ${selectedOptions[p.id]?.agreedTec ? 'checked' : ''}`}>
+                              {selectedOptions[p.id]?.agreedTec && '✓'}
+                            </div>
+                            <span className="tec-check-label">上記を理解した上で購入します</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="option-total-row">
+                      <span className="option-total-label">合計</span>
+                      <div>
+                        <div className="option-total-price">
+                          ¥{(
+                            (p.price || 0) +
+                            (selectedOptions[p.id]?.case ? OPTION_CASE_PRICE : 0) +
+                            (selectedOptions[p.id]?.glass ? OPTION_GLASS_PRICE : 0)
+                          ).toLocaleString()}
+                        </div>
+                        <div className="option-total-sub">関税・送料込み</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="product-actions">
                   <button
                     className="btn-cart"

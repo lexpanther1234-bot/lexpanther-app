@@ -1,0 +1,129 @@
+.repair-screen {
+  background: #0a0a0a;
+  min-height: 100vh;
+  padding: 20px 16px 60px;
+}
+.repair-title   { color: #00ff88; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.repair-subtitle{ color: #444; font-size: 12px; margin-bottom: 20px; }
+
+/* 費用目安 */
+.price-guide-card {
+  background: rgba(0,255,136,0.04);
+  border: 1px solid rgba(0,255,136,0.15);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+.price-guide-title { color: #00ff88; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+.price-guide-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.price-guide-row:last-child { border-bottom: none; }
+.price-guide-label { color: #777; font-size: 12px; }
+.price-guide-val   { color: #ddd; font-size: 12px; font-weight: 600; }
+
+/* ステップ */
+.repair-step-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 16px 0 10px;
+}
+.step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,255,136,0.12);
+  border: 1px solid rgba(0,255,136,0.3);
+  color: #00ff88;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* フォーム要素 */
+.repair-select, .repair-input, .repair-textarea {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  color: #ddd;
+  font-size: 13px;
+  padding: 11px 14px;
+  width: 100%;
+  margin-bottom: 8px;
+  display: block;
+  box-sizing: border-box;
+}
+.repair-textarea { resize: none; line-height: 1.6; font-family: inherit; }
+
+/* 症状チェック */
+.symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+.symptom-chip {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  color: #777;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 9px 10px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.symptom-chip.selected {
+  background: rgba(0,255,136,0.08);
+  border-color: rgba(0,255,136,0.3);
+  color: #00ff88;
+}
+
+/* 送信ボタン */
+.repair-submit-btn {
+  background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,200,100,0.08));
+  border: 1px solid rgba(0,255,136,0.35);
+  border-radius: 14px;
+  color: #00ff88;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 8px;
+  padding: 16px;
+  width: 100%;
+  transition: all 0.2s;
+}
+.repair-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0,255,136,0.22), rgba(0,200,100,0.14));
+}
+.repair-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.repair-note { color: #333; font-size: 11px; text-align: center; margin-top: 10px; }
+
+/* 完了画面 */
+.repair-success {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+.success-icon  { font-size: 48px; }
+.success-title { color: #00ff88; font-size: 20px; font-weight: 700; }
+.success-text  { color: #666; font-size: 13px; line-height: 1.7; }
+.success-back {
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.3);
+  border-radius: 12px;
+  color: #00ff88;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 12px 24px;
+}

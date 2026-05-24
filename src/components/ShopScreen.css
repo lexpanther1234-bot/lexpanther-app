@@ -489,3 +489,79 @@
   cursor: pointer;
   width: 100%;
 }
+
+/* ── バッジ ── */
+.badge-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.badge { border-radius: 20px; font-size: 9px; font-weight: 600; padding: 2px 8px; }
+.badge-green  { background: rgba(0,255,136,0.1);  color: #00ff88; border: 1px solid rgba(0,255,136,0.25); }
+.badge-orange { background: rgba(255,165,0,0.1);  color: #ffa500; border: 1px solid rgba(255,165,0,0.25); }
+.badge-red    { background: rgba(255,80,80,0.1);  color: #ff5050; border: 1px solid rgba(255,80,80,0.25); }
+
+/* ── オプション選択 ── */
+.option-section { margin: 10px 0; }
+.option-section-title { color: #aaa; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+.option-row {
+  display: flex;
+  align-items: center;
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 10px 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.option-row.selected { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.35); }
+.option-check {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+.option-check.checked { background: #00ff88; border-color: #00ff88; color: #000; }
+.option-icon  { font-size: 16px; }
+.option-info  { flex: 1; }
+.option-name  { color: #ddd; font-size: 11px; font-weight: 600; }
+.option-desc  { color: #555; font-size: 9px; margin-top: 1px; }
+.option-price { color: #00ff88; font-size: 11px; font-weight: 700; }
+
+/* ── 技適免責 ── */
+.teccheck-box {
+  background: rgba(255,165,0,0.05);
+  border: 1px solid rgba(255,165,0,0.2);
+  border-radius: 10px;
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 10px;
+}
+.teccheck-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.teccheck-text { color: #888; font-size: 10px; line-height: 1.5; margin-bottom: 6px; }
+.teccheck-check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.tec-checkbox {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid #ffa500;
+  background: rgba(255,165,0,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: #ffa500;
+  flex-shrink: 0;
+}
+.tec-checkbox.checked { background: #ffa500; color: #000; }
+.tec-check-label { color: #ffa500; font-size: 10px; font-weight: 600; }
+
+/* ── オプション合計 ── */
+.option-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #1e1e1e;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.option-total-label { color: #aaa; font-size: 11px; }
+.option-total-price { color: #00ff88; font-size: 16px; font-weight: 800; text-align: right; }
+.option-total-sub   { color: #555; font-size: 9px; text-align: right; margin-top: 1px; }

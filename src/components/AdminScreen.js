@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './AdminScreen.css';
+
+const STATUS_LABELS = {
+  pending:    '⏳ 未対応',
+  contacted:  '📞 連絡済み',
+  in_repair:  '🔧 修理中',
+  done:       '✅ 完了',
+};
 
 const EMPTY_PHONE = {
   name: '', brand: '', price: 0, image: '', category: 'flagship', releaseYear: 2025,
@@ -32,6 +39,22 @@ const AdminScreen = () => {
   const [infForm, setInfForm] = useState(EMPTY_INFLUENCER);
   const [infEditing, setInfEditing] = useState(null);
   const [infSaving, setInfSaving] = useState(false);
+
+  // Repair requests
+  const [repairRequests, setRepairRequests] = useState([]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      query(collection(db, 'repairRequests'), orderBy('createdAt', 'desc')),
+      snap => setRepairRequests(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => console.error('Repair requests load error:', err)
+    );
+    return () => unsub();
+  }, []);
+
+  const updateRepairStatus = async (id, status) => {
+    await updateDoc(doc(db, 'repairRequests', id), { status });
+  };
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'phones'), (snap) => {
@@ -216,6 +239,7 @@ const AdminScreen = () => {
       <div className="admin-tabs">
         <button className={`admin-tab-btn ${adminTab === 'phones' ? 'active' : ''}`} onClick={() => setAdminTab('phones')}>📱 機種管理</button>
         <button className={`admin-tab-btn ${adminTab === 'influencer' ? 'active' : ''}`} onClick={() => setAdminTab('influencer')}>🎬 インフルエンサー</button>
+        <button className={`admin-tab-btn ${adminTab === 'repair' ? 'active' : ''}`} onClick={() => setAdminTab('repair')}>🔧 修理管理</button>
       </div>
 
       {adminTab === 'phones' && (
@@ -412,6 +436,41 @@ const AdminScreen = () => {
               </div>
             ))}
             {infReviews.length === 0 && <p className="admin-empty">インフルエンサーレビューがありません</p>}
+          </div>
+        </>
+      )}
+
+      {adminTab === 'repair' && (
+        <>
+          <div className="admin-list">
+            {repairRequests.length === 0 && <p className="admin-empty">修理申し込みがありません</p>}
+            {repairRequests.map(req => (
+              <div key={req.id} className="admin-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="admin-item-name">{req.phoneName}</div>
+                  <span style={{ fontSize: '11px' }}>{STATUS_LABELS[req.status] || req.status}</span>
+                </div>
+                <div className="admin-item-meta">
+                  症状: {req.symptoms?.join(', ')} · {req.name} · {req.email}
+                </div>
+                {req.detail && <div className="admin-item-meta" style={{ color: '#666' }}>{req.detail}</div>}
+                <div className="admin-item-meta" style={{ color: '#444' }}>
+                  {req.createdAt?.toDate?.()?.toLocaleString('ja-JP') || '—'}
+                </div>
+                <div className="admin-item-actions">
+                  {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                    <button
+                      key={key}
+                      className={req.status === key ? 'admin-edit-btn' : 'admin-cache-clear-btn'}
+                      onClick={() => updateRepairStatus(req.id, key)}
+                      style={{ fontSize: '10px', padding: '4px 8px' }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
