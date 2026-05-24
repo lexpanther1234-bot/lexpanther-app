@@ -170,14 +170,21 @@ const CompareScreen = () => {
   const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'phones'), (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPhones(data);
-      if (data.length > 0 && selectedPhones.length === 0) {
-        setSelectedPhones(data.slice(0, 3));
+    const unsub = onSnapshot(
+      collection(db, 'phones'),
+      (snap) => {
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setPhones(data);
+        if (data.length > 0 && selectedPhones.length === 0) {
+          setSelectedPhones(data.slice(0, 3));
+        }
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Phones load error:', err);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    );
     return () => unsub();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -614,7 +621,27 @@ const CompareScreen = () => {
   const rankClass = (i) => ['rank-gold', 'rank-silver', 'rank-bronze'][i] || 'rank-other';
 
   if (loading) {
-    return <div className="compare-screen"><h2 className="compare-title">⚖ Compare</h2><p style={{ color: '#555', textAlign: 'center' }}>読み込み中...</p></div>;
+    return (
+      <div className="compare-screen">
+        <h2 className="compare-title">⚖ Compare</h2>
+        <p style={{ color: '#555', textAlign: 'center' }}>読み込み中...</p>
+        <p style={{ color: '#333', textAlign: 'center', fontSize: '11px', marginTop: '8px' }}>
+          接続に失敗した場合はページを更新してください
+        </p>
+      </div>
+    );
+  }
+
+  if (phones.length === 0) {
+    return (
+      <div className="compare-screen">
+        <h2 className="compare-title">⚖ Compare</h2>
+        <p style={{ color: '#555', textAlign: 'center' }}>データを取得できませんでした</p>
+        <p style={{ color: '#333', textAlign: 'center', fontSize: '11px', marginTop: '8px' }}>
+          ネットワーク接続を確認してページを更新してください
+        </p>
+      </div>
+    );
   }
 
   return (
