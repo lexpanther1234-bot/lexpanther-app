@@ -29,12 +29,12 @@
 
 /* ロゴ画像：hue-rotateでシアン→緑に変換 */
 .splash-logo-img {
-  width: 65%;
-  max-width: 220px;
+  width: 50%;
+  max-width: 180px;
   height: auto;
   filter: hue-rotate(-38deg) saturate(1.1) brightness(1.05);
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 28px;
 }
 
 .splash-wordmark {
@@ -42,31 +42,31 @@
   align-items: baseline;
   gap: 0;
   letter-spacing: 3px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .splash-lex {
   color: #00ff88;
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
 }
 
 .splash-panther {
   color: #e0e0e0;
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
 }
 
 .splash-tagline {
-  color: #444;
+  color: #555;
   font-family: system-ui, sans-serif;
   font-size: 9px;
-  letter-spacing: 4px;
-  margin-bottom: 32px;
+  letter-spacing: 5px;
+  margin-bottom: 40px;
 }
 
 .splash-bar-bg {
