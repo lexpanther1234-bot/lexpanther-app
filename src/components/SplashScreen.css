@@ -29,12 +29,12 @@
 
 /* ロゴ画像：hue-rotateでシアン→緑に変換 */
 .splash-logo-img {
-  width: 75%;
-  max-width: 260px;
+  width: 65%;
+  max-width: 220px;
   height: auto;
   filter: hue-rotate(-38deg) saturate(1.1) brightness(1.05);
   display: block;
-  margin-bottom: -8px;
+  margin-bottom: 12px;
 }
 
 .splash-wordmark {
@@ -42,7 +42,7 @@
   align-items: baseline;
   gap: 0;
   letter-spacing: 3px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .splash-lex {
@@ -62,11 +62,11 @@
 }
 
 .splash-tagline {
-  color: #2a2a2a;
+  color: #444;
   font-family: system-ui, sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 4px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .splash-bar-bg {
