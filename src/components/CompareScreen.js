@@ -111,6 +111,7 @@ const CompareScreen = () => {
   const { user, signIn } = useAuth();
   const [phones, setPhones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [activeSection, setActiveSection] = useState('ranking');
   const [activeRankType, setActiveRankType] = useState('overall');
   const [selectedPhones, setSelectedPhones] = useState([]);
@@ -171,6 +172,10 @@ const CompareScreen = () => {
       if (data.length > 0 && selectedPhones.length === 0) {
         setSelectedPhones(data.slice(0, 3));
       }
+      setLoading(false);
+    }, (error) => {
+      console.error('Firestore phones fetch error:', error);
+      setLoadError(error.message || 'データの取得に失敗しました');
       setLoading(false);
     });
     return () => unsub();
@@ -544,6 +549,19 @@ const CompareScreen = () => {
 
   if (loading) {
     return <div className="compare-screen"><h2 className="compare-title">⚖ Compare</h2><p style={{ color: '#555', textAlign: 'center' }}>読み込み中...</p></div>;
+  }
+
+  if (loadError) {
+    return (
+      <div className="compare-screen">
+        <h2 className="compare-title">⚖ Compare</h2>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: '#ff6b6b', marginBottom: '1rem' }}>⚠ データの読み込みに失敗しました</p>
+          <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1rem' }}>{loadError}</p>
+          <button onClick={() => window.location.reload()} style={{ background: '#00e5a0', color: '#000', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>再読み込み</button>
+        </div>
+      </div>
+    );
   }
 
   return (
