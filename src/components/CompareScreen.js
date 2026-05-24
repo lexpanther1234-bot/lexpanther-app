@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, getDoc, updateDoc, increment, serverTimestamp, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { blendScore, SCORE_REVIEW_MAP } from '../utils/scoreBlending';
@@ -132,6 +132,11 @@ const CompareScreen = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Select stats
+  const [selectStats,  setSelectStats]  = useState([]);
+  const [comboStats,   setComboStats]   = useState([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+
   // Influencer reviews
   const [influencerReviews, setInfluencerReviews] = useState([]);
 
@@ -239,6 +244,30 @@ const CompareScreen = () => {
     setShowSpecModal(false);
   }, [reviewPhoneId]);
 
+  // Load select stats when compare tab is active
+  useEffect(() => {
+    if (activeSection !== 'compare') return;
+    const loadStats = async () => {
+      setStatsLoading(true);
+      try {
+        const selectSnap = await getDocs(
+          query(collection(db, 'phoneSelectStats'), orderBy('selectCount', 'desc'), limit(10))
+        );
+        setSelectStats(selectSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+        const comboSnap = await getDocs(
+          query(collection(db, 'compareComboStats'), orderBy('count', 'desc'), limit(4))
+        );
+        setComboStats(comboSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (err) {
+        console.error('Stats load error:', err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    loadStats();
+  }, [activeSection]);
+
   const brands = useMemo(() => {
     const set = new Set(phones.map(p => p.brand).filter(Boolean));
     return ['all', ...Array.from(set).sort()];
@@ -283,6 +312,45 @@ const CompareScreen = () => {
     setSearchQuery('');
   };
 
+  const recordSelectStats = async (phone) => {
+    try {
+      const statRef = doc(db, 'phoneSelectStats', phone.id);
+      const statSnap = await getDoc(statRef);
+      if (statSnap.exists()) {
+        await updateDoc(statRef, { selectCount: increment(1) });
+      } else {
+        await setDoc(statRef, { phoneId: phone.id, phoneName: phone.name, brand: phone.brand || '', selectCount: 1 });
+      }
+    } catch (err) {
+      console.error('recordSelectStats error:', err);
+    }
+  };
+
+  const recordComboStats = async (phones) => {
+    if (phones.length < 2) return;
+    try {
+      for (let i = 0; i < phones.length; i++) {
+        for (let j = i + 1; j < phones.length; j++) {
+          const ids = [phones[i].id, phones[j].id].sort();
+          const comboId = ids.join('_');
+          const comboRef = doc(db, 'compareComboStats', comboId);
+          const comboSnap = await getDoc(comboRef);
+          if (comboSnap.exists()) {
+            await updateDoc(comboRef, { count: increment(1) });
+          } else {
+            await setDoc(comboRef, {
+              phoneIds:   ids,
+              phoneNames: ids.map(id => phones.find(p => p.id === id)?.name || id),
+              count:      1,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('recordComboStats error:', err);
+    }
+  };
+
   const handlePhoneSelect = (phone) => {
     const newSelected = [...selectedPhones];
     if (selectorSlot !== null && selectorSlot < newSelected.length) {
@@ -292,6 +360,9 @@ const CompareScreen = () => {
     }
     setSelectedPhones(newSelected);
     setShowSelector(false);
+
+    recordSelectStats(phone);
+    if (newSelected.length >= 2) recordComboStats(newSelected);
   };
 
   const removePhone = (index, e) => {
@@ -710,6 +781,104 @@ const CompareScreen = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── 統計セクション ── */}
+          {!statsLoading && (
+            <div className="stats-wrap">
+
+              {selectStats.length > 0 && (
+                <div className="stats-section">
+                  <div className="stats-title">📊 よく比較に選ばれる機種</div>
+                  <div className="stats-card">
+                    {selectStats.slice(0, 5).map((stat, i) => {
+                      const maxCount = selectStats[0]?.selectCount || 1;
+                      const pct = Math.round((stat.selectCount / maxCount) * 100);
+                      const rankClass = ['rank-gold', 'rank-silver', 'rank-bronze'][i] || 'rank-other';
+                      return (
+                        <div key={stat.id} className="stat-row">
+                          <span className={`stat-num ${rankClass}`}>{i + 1}</span>
+                          <div className="stat-phone-info">
+                            <div className="stat-phone-name">{stat.phoneName}</div>
+                            <div className="stat-phone-brand">{stat.brand}</div>
+                          </div>
+                          <div className="stat-bar-wrap">
+                            <div className="stat-bar-bg">
+                              <div className="stat-bar-fill" style={{ width: `${pct}%` }} />
+                            </div>
+                            <div className="stat-count">{stat.selectCount.toLocaleString()}回</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {comboStats.length > 0 && (
+                <div className="stats-section">
+                  <div className="stats-title">🔥 人気の比較組み合わせ</div>
+                  <div className="stats-card">
+                    {comboStats.map((combo, i) => (
+                      <div key={combo.id} className="combo-row">
+                        <span className="combo-num">{i + 1}</span>
+                        <div className="combo-phones">
+                          <span className="combo-phone">{combo.phoneNames[0]}</span>
+                          <span className="combo-vs">VS</span>
+                          <span className="combo-phone">{combo.phoneNames[1]}</span>
+                        </div>
+                        <span className="combo-count">{combo.count.toLocaleString()}回</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedPhones.length > 0 && selectStats.length > 0 && (() => {
+                const selectedIds = new Set(selectedPhones.map(p => p.id));
+                const related = comboStats
+                  .filter(c => c.phoneIds.some(id => selectedIds.has(id)))
+                  .flatMap(c => c.phoneIds.filter(id => !selectedIds.has(id)))
+                  .filter((id, idx, arr) => arr.indexOf(id) === idx)
+                  .slice(0, 6)
+                  .map(id => {
+                    const stat = selectStats.find(s => s.id === id);
+                    const combo = comboStats.find(c => c.phoneIds.includes(id) && c.phoneIds.some(pid => selectedIds.has(pid)));
+                    return stat ? { ...stat, comboCount: combo?.count || 0 } : null;
+                  })
+                  .filter(Boolean);
+
+                if (related.length === 0) return null;
+                return (
+                  <div className="stats-section">
+                    <div className="recommend-card">
+                      <div className="recommend-title">
+                        💡 {selectedPhones[0]?.name} とよく比較される機種
+                      </div>
+                      <div className="recommend-chips">
+                        {related.map(r => (
+                          <button
+                            key={r.id}
+                            className="recommend-chip"
+                            onClick={() => {
+                              const phone = phones.find(p => p.id === r.id);
+                              if (phone && selectedPhones.length < 4 && !selectedPhones.find(p => p.id === r.id)) {
+                                setSelectedPhones(prev => [...prev, phone]);
+                                recordSelectStats(phone);
+                              }
+                            }}
+                          >
+                            {r.phoneName}
+                            <span className="chip-count">{r.comboCount.toLocaleString()}回</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
             </div>
           )}
         </div>
