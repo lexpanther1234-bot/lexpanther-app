@@ -50,9 +50,9 @@ function App() {
         {activeTab === 'admin' && <AdminScreen />}
       </div>
       <div className="tab-bar">
+        <button className={`tab ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}><span className="tab-icon">🛒</span><span className="tab-label">SHOP</span></button>
         <button className={`tab ${activeTab === 'news' ? 'active' : ''}`} onClick={() => setActiveTab('news')}><span className="tab-icon">📰</span><span className="tab-label">NEWS</span></button>
         <button className={`tab ${activeTab === 'compare' ? 'active' : ''}`} onClick={() => setActiveTab('compare')}><span className="tab-icon">⚖️</span><span className="tab-label">COMPARE</span></button>
-        <button className={`tab ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}><span className="tab-icon">🛒</span><span className="tab-label">SHOP</span></button>
         <button className={`tab ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}><span className="tab-icon">💬</span><span className="tab-label">COMMUNITY</span></button>
         <button className={`tab ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => setActiveTab('chat')}><span className="tab-icon">🐆</span><span className="tab-label">LEX AI</span></button>
         <button className={`tab ${activeTab === 'repair' ? 'active' : ''}`} onClick={() => setActiveTab('repair')}><span className="tab-icon">🔧</span><span className="tab-label">修理</span></button>
