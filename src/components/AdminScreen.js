@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, updateDoc, serverTimestamp, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import './AdminScreen.css';
@@ -18,6 +18,7 @@ const EMPTY_PHONE = {
   benchmarks: { antutu: 0, geekbench_single: 0, geekbench_multi: 0, dmark: 0 },
   weight: '', charge: '', shopUrl: '',
   stock: 0, hasCase: false, hasGlass: false, tecApproved: true,
+  isNew: false, isSale: false, salePrice: 0, saleUntilStr: '',
 };
 
 const EMPTY_INFLUENCER = {
@@ -114,6 +115,10 @@ const AdminScreen = () => {
       hasCase: phone.hasCase || false,
       hasGlass: phone.hasGlass || false,
       tecApproved: phone.tecApproved !== false,
+      isNew: phone.isNew || false,
+      isSale: phone.isSale || false,
+      salePrice: phone.salePrice || 0,
+      saleUntilStr: phone.saleUntil?.toDate ? phone.saleUntil.toDate().toISOString().slice(0, 16) : '',
     });
   };
 
@@ -142,6 +147,10 @@ const AdminScreen = () => {
         hasCase: Boolean(form.hasCase),
         hasGlass: Boolean(form.hasGlass),
         tecApproved: Boolean(form.tecApproved),
+        isNew: Boolean(form.isNew),
+        isSale: Boolean(form.isSale),
+        salePrice: Number(form.salePrice) || 0,
+        ...(form.saleUntilStr ? { saleUntil: Timestamp.fromDate(new Date(form.saleUntilStr)) } : {}),
       };
       await setDoc(doc(db, 'phones', id), data);
       setEditing(null);
@@ -322,6 +331,28 @@ const AdminScreen = () => {
                 <span>技適取得済み</span>
                 <input type="checkbox" checked={form.tecApproved} onChange={(e) => updateField('tecApproved', e.target.checked)} style={{ width: 'auto' }} />
               </label>
+
+              <h4 className="form-section">在庫・セール管理</h4>
+              <label className="form-row" style={{ cursor: 'pointer' }}>
+                <span>新着フラグ</span>
+                <input type="checkbox" checked={form.isNew || false} onChange={(e) => updateField('isNew', e.target.checked)} style={{ width: 'auto' }} />
+              </label>
+              <label className="form-row" style={{ cursor: 'pointer' }}>
+                <span>セール中</span>
+                <input type="checkbox" checked={form.isSale || false} onChange={(e) => updateField('isSale', e.target.checked)} style={{ width: 'auto' }} />
+              </label>
+              {form.isSale && (
+                <>
+                  <label className="form-row">
+                    <span>セール価格</span>
+                    <input type="number" value={form.salePrice || ''} onChange={(e) => updateField('salePrice', e.target.value)} placeholder="例: 89000" />
+                  </label>
+                  <label className="form-row">
+                    <span>セール終了日時</span>
+                    <input type="datetime-local" value={form.saleUntilStr || ''} onChange={(e) => updateField('saleUntilStr', e.target.value)} />
+                  </label>
+                </>
+              )}
 
               <h4 className="form-section">スペック</h4>
               {['cpu', 'ram', 'storage', 'camera', 'battery', 'display'].map((key) => (

@@ -446,3 +446,27 @@
   color: #555;
   font-size: 11px;
 }
+
+/* エラーカード */
+.feed-error-card {
+  background: rgba(255, 180, 0, 0.04);
+  border: 1px solid rgba(255, 180, 0, 0.15);
+  border-radius: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  margin: 20px 0;
+}
+.feed-error-icon { font-size: 36px; margin-bottom: 10px; }
+.feed-error-title { color: #ffb400; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.feed-error-text { color: #777; font-size: 12px; line-height: 1.7; margin-bottom: 16px; }
+.feed-error-retry {
+  background: rgba(255, 180, 0, 0.1);
+  border: 1px solid rgba(255, 180, 0, 0.3);
+  border-radius: 10px;
+  color: #ffb400;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 10px 24px;
+  transition: all 0.2s;
+}
+.feed-error-retry:hover { background: rgba(255, 180, 0, 0.18); }

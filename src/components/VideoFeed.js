@@ -51,7 +51,15 @@ const fetchPage = async (query, pageToken = null) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ path: 'search', params }),
   });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    const reason = data.error?.errors?.[0]?.reason || '';
+    if (reason === 'quotaExceeded') {
+      throw new Error('QUOTA_EXCEEDED');
+    }
+    throw new Error(data.error?.message || 'YouTube API error');
+  }
+  return data;
 };
 
 const VideoFeed = () => {
@@ -65,6 +73,7 @@ const VideoFeed = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('all');
+  const [error, setError] = useState(null);
   const loaderRef = useRef(null);
 
   const buildQuery = useCallback(() => {
@@ -82,6 +91,7 @@ const VideoFeed = () => {
     setLoading(true);
     setNextPageToken(null);
     setVideos([]);
+    setError(null);
     const query = buildQuery();
 
     try {
@@ -91,6 +101,18 @@ const VideoFeed = () => {
         const seen = new Set();
         const all = [];
         const tokenMap = {};
+
+        // 全部失敗したらエラー表示
+        const allFailed = results.every(r => r.status === 'rejected');
+        if (allFailed) {
+          const firstErr = results[0].reason?.message || '';
+          if (firstErr === 'QUOTA_EXCEEDED') {
+            setError('quota');
+          } else {
+            setError('network');
+          }
+          return;
+        }
 
         results.forEach((r, i) => {
           if (r.status !== 'fulfilled' || !r.value.items) return;
@@ -114,6 +136,11 @@ const VideoFeed = () => {
       }
     } catch (e) {
       console.error(e);
+      if (e.message === 'QUOTA_EXCEEDED') {
+        setError('quota');
+      } else {
+        setError('network');
+      }
     } finally {
       setLoading(false);
     }
@@ -217,7 +244,21 @@ const VideoFeed = () => {
 
       <p className="result-count"><span>{filteredVideos.length}</span> 件の動画</p>
 
-      {loading ? (
+      {error === 'quota' ? (
+        <div className="feed-error-card">
+          <div className="feed-error-icon">⚠️</div>
+          <div className="feed-error-title">YouTube APIの利用上限に達しました</div>
+          <p className="feed-error-text">本日のAPIクォータを超過したため、動画を取得できません。<br/>明日（日本時間AM9時頃）にリセットされます。</p>
+          <button className="feed-error-retry" onClick={fetchVideos}>再試行</button>
+        </div>
+      ) : error === 'network' ? (
+        <div className="feed-error-card">
+          <div className="feed-error-icon">📡</div>
+          <div className="feed-error-title">動画を取得できませんでした</div>
+          <p className="feed-error-text">ネットワークまたはサーバーに問題が発生しました。</p>
+          <button className="feed-error-retry" onClick={fetchVideos}>再試行</button>
+        </div>
+      ) : loading ? (
         <p className="no-result">読み込み中...</p>
       ) : filteredVideos.length === 0 ? (
         <p className="no-result">該当する動画が見つかりませんでした</p>
