@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import SplashScreen from './components/SplashScreen';
-import VideoFeed from './components/VideoFeed';
 import NewsScreen from './components/NewsScreen';
 import ShopScreen from './components/ShopScreen';
 import CommunityScreen from './components/CommunityScreen';
@@ -12,7 +11,7 @@ import { useAuth } from './AuthContext';
 import './App.css';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('feed');
+  const [activeTab, setActiveTab] = useState('shop');
   const [showSplash, setShowSplash] = useState(true);
   const handleSplashFinish = useCallback(() => setShowSplash(false), []);
   const { user, signIn, signOut } = useAuth();
@@ -42,7 +41,6 @@ function App() {
         </div>
       </div>
       <div className="app-content">
-        {activeTab === 'feed' && <VideoFeed />}
         {activeTab === 'news' && <NewsScreen />}
         {activeTab === 'compare' && <CompareScreen />}
         {activeTab === 'shop' && <ShopScreen />}
@@ -52,7 +50,6 @@ function App() {
         {activeTab === 'admin' && <AdminScreen />}
       </div>
       <div className="tab-bar">
-        <button className={`tab ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><span className="tab-icon">▶</span><span className="tab-label">FEED</span></button>
         <button className={`tab ${activeTab === 'news' ? 'active' : ''}`} onClick={() => setActiveTab('news')}><span className="tab-icon">📰</span><span className="tab-label">NEWS</span></button>
         <button className={`tab ${activeTab === 'compare' ? 'active' : ''}`} onClick={() => setActiveTab('compare')}><span className="tab-icon">⚖️</span><span className="tab-label">COMPARE</span></button>
         <button className={`tab ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}><span className="tab-icon">🛒</span><span className="tab-label">SHOP</span></button>
