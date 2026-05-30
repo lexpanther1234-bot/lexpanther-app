@@ -121,13 +121,16 @@ const ShopScreen = () => {
   }, [phones]);
 
   const tabPhones = useMemo(() => {
+    let list;
     if (activeTab === 'おすすめ') return phones.slice(0, 20);
-    if (activeTab === 'Apple') return phones.filter(p => p.brand === 'Apple');
-    if (activeTab === '国産') return phones.filter(p =>
+    if (activeTab === 'Apple') list = phones.filter(p => p.brand === 'Apple');
+    else if (activeTab === '国産') list = phones.filter(p =>
       ['Xiaomi', 'OPPO', 'OnePlus', 'HUAWEI', 'Honor', 'vivo', 'Realme'].includes(p.brand)
     );
-    if (activeTab === 'タブレット') return phones.filter(p => p.category === 'tablet');
-    return phones;
+    else if (activeTab === 'タブレット') list = phones.filter(p => p.category === 'tablet');
+    else list = [...phones];
+    // 最新機種順（releaseYear→price降順）
+    return list.sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0) || (b.price || 0) - (a.price || 0));
   }, [phones, activeTab]);
 
   const searchResults = useMemo(() => {
@@ -392,13 +395,13 @@ const ShopScreen = () => {
             </>
           )}
 
-          {/* ブランドタブ（Apple・国産など）: 機種選択グリッド + 全て見る */}
-          {activeTab !== 'おすすめ' && !showAllList && (
+          {/* ブランドタブ（Apple・国産など） */}
+          {activeTab !== 'おすすめ' && (
             <>
-              {/* 各機種を3列グリッドで表示 */}
+              {/* 上部：機種選択グリッド（最新7件＋全て見る）4列 */}
               {tabPhones.length > 0 && (
                 <div className="model-pick-grid">
-                  {tabPhones.map(phone => (
+                  {tabPhones.slice(0, 7).map(phone => (
                     <div key={phone.id} className="model-pick-item" onClick={() => openDetail(phone)}>
                       <div className="model-pick-img">
                         {phone.image
@@ -410,58 +413,71 @@ const ShopScreen = () => {
                     </div>
                   ))}
                   {/* 全て見る */}
-                  <div className="model-pick-item" onClick={() => setShowAllList(true)}>
-                    <div className="model-pick-img model-pick-all">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.5">
-                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                  <div className="model-pick-item" onClick={() => setShowAllList(!showAllList)}>
+                    <div className={`model-pick-img model-pick-all ${showAllList ? 'active' : ''}`}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={showAllList ? '#00aa55' : '#bbb'} strokeWidth="1.5">
+                        <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </div>
-                    <div className="model-pick-name">全て見る</div>
+                    <div className="model-pick-name">{showAllList ? '閉じる' : '全て見る'}</div>
                   </div>
                 </div>
               )}
+
+              {/* 全て見る展開時：残りの機種も表示 */}
+              {showAllList && tabPhones.length > 7 && (
+                <div className="model-pick-grid model-pick-expanded">
+                  {tabPhones.slice(7).map(phone => (
+                    <div key={phone.id} className="model-pick-item" onClick={() => openDetail(phone)}>
+                      <div className="model-pick-img">
+                        {phone.image
+                          ? <img src={phone.image} alt="" className="model-pick-photo" />
+                          : <span style={{ fontSize: 30 }}>📱</span>
+                        }
+                      </div>
+                      <div className="model-pick-name">{phone.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 下部：商品カード一覧 */}
+              <div className="shop-section">
+                <div className="sec-hdr">
+                  <div className="sec-dot-title">
+                    <div className="sec-dot" />
+                    <span className="sec-title">{activeTab}</span>
+                  </div>
+                  <span className="sec-more">{tabPhones.length}件</span>
+                </div>
+                <div className="product-grid-2">
+                  {tabPhones.map(phone => (
+                    <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
+                      <div className="pc-img-wrap">
+                        {phone.image
+                          ? <img src={phone.image} alt="" className="pc-img" />
+                          : <span className="pc-emoji">📱</span>
+                        }
+                        <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
+                          {phone.grade || '新品'}
+                        </span>
+                      </div>
+                      <div className="pc-info">
+                        <div className="pc-name">{phone.name}</div>
+                        <div className="pc-price-row">
+                          <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
+                          <span className="pc-similar">類似 ›</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {tabPhones.length === 0 && (
                 <p className="no-result">該当する商品がありません</p>
               )}
             </>
-          )}
-
-          {/* 全て見る一覧モード */}
-          {activeTab !== 'おすすめ' && showAllList && (
-            <div className="shop-section">
-              <div className="sec-hdr">
-                <div className="sec-dot-title">
-                  <div className="sec-dot" />
-                  <span className="sec-title">{activeTab} — 全商品</span>
-                </div>
-                <span className="sec-more">{tabPhones.length}件</span>
-              </div>
-              <div className="product-grid-2">
-                {tabPhones.map(phone => (
-                  <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
-                    <div className="pc-img-wrap">
-                      {phone.image
-                        ? <img src={phone.image} alt="" className="pc-img" />
-                        : <span className="pc-emoji">📱</span>
-                      }
-                      <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
-                        {phone.grade || '新品'}
-                      </span>
-                    </div>
-                    <div className="pc-info">
-                      <div className="pc-name">{phone.name}</div>
-                      <div className="pc-price-row">
-                        <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
-                        <span className="pc-similar">類似 ›</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           )}
         </div>
       )}
