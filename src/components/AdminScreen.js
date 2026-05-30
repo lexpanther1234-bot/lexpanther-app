@@ -19,6 +19,7 @@ const EMPTY_PHONE = {
   weight: '', charge: '', shopUrl: '',
   stock: 0, hasCase: false, hasGlass: false, tecApproved: true,
   isNew: false, isSale: false, salePrice: 0, saleUntilStr: '',
+  grade: '新品', imei: '', inspectionReport: '', includeItems: '', batteryHealth: 0,
 };
 
 const EMPTY_INFLUENCER = {
@@ -119,6 +120,11 @@ const AdminScreen = () => {
       isSale: phone.isSale || false,
       salePrice: phone.salePrice || 0,
       saleUntilStr: phone.saleUntil?.toDate ? phone.saleUntil.toDate().toISOString().slice(0, 16) : '',
+      grade: phone.grade || '新品',
+      imei: phone.imei || '',
+      inspectionReport: phone.inspectionReport || '',
+      includeItems: phone.includeItems || '',
+      batteryHealth: phone.batteryHealth || 0,
     });
   };
 
@@ -151,6 +157,11 @@ const AdminScreen = () => {
         isSale: Boolean(form.isSale),
         salePrice: Number(form.salePrice) || 0,
         ...(form.saleUntilStr ? { saleUntil: Timestamp.fromDate(new Date(form.saleUntilStr)) } : {}),
+        grade: form.grade || '新品',
+        imei: form.imei || '',
+        inspectionReport: form.inspectionReport || '',
+        includeItems: form.includeItems || '',
+        batteryHealth: Number(form.batteryHealth) || 0,
       };
       await setDoc(doc(db, 'phones', id), data);
       setEditing(null);
@@ -353,6 +364,40 @@ const AdminScreen = () => {
                   </label>
                 </>
               )}
+
+              <h4 className="form-section">商品詳細情報</h4>
+              <label className="form-row">
+                <span>コンディション</span>
+                <select value={form.grade || '新品'} onChange={(e) => updateField('grade', e.target.value)}>
+                  <option value="新品">新品</option>
+                  <option value="99新">99新（ほぼ新品）</option>
+                  <option value="95新">95新（美品）</option>
+                  <option value="9新">9新（良品）</option>
+                  <option value="8新">8新（並品）</option>
+                </select>
+              </label>
+              <label className="form-row">
+                <span>IMEI/SN</span>
+                <input value={form.imei || ''} onChange={(e) => updateField('imei', e.target.value)} placeholder="例: 865968074854482" />
+              </label>
+              <label className="form-row" style={{ alignItems: 'flex-start' }}>
+                <span>質検報告</span>
+                <textarea
+                  value={form.inspectionReport || ''}
+                  onChange={(e) => updateField('inspectionReport', e.target.value)}
+                  placeholder="例: 画面傷なし、フレーム塗装落ち、カメラレンズ細かい傷あり"
+                  rows={3}
+                  style={{ flex: 1, background: '#0a0a0a', border: '1px solid #1a2a1a', color: '#e8e8e8', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical' }}
+                />
+              </label>
+              <label className="form-row">
+                <span>付属品</span>
+                <input value={form.includeItems || ''} onChange={(e) => updateField('includeItems', e.target.value)} placeholder="例: 本体+充電セット+箱" />
+              </label>
+              <label className="form-row">
+                <span>電池残量 (%)</span>
+                <input type="number" value={form.batteryHealth || ''} onChange={(e) => updateField('batteryHealth', e.target.value)} placeholder="例: 94" />
+              </label>
 
               <h4 className="form-section">スペック</h4>
               {['cpu', 'ram', 'storage', 'camera', 'battery', 'display'].map((key) => (
