@@ -46,6 +46,7 @@ const ShopScreen = () => {
   const [sidebarCategory, setSidebarCategory] = useState('Apple');
   const [searchQuery, setSearchQuery] = useState('');
   const [saleTimeLeft, setSaleTimeLeft] = useState('');
+  const [selectedModel, setSelectedModel] = useState(null);
 
   // Firestore phones購読
   useEffect(() => {
@@ -128,6 +129,30 @@ const ShopScreen = () => {
     if (activeTab === 'タブレット') return phones.filter(p => p.category === 'tablet');
     return phones;
   }, [phones, activeTab]);
+
+  // モデルシリーズ（例: "iPhone 17", "iPhone 16" など）にグループ化
+  const modelSeries = useMemo(() => {
+    if (activeTab === 'おすすめ') return [];
+    const seriesMap = {};
+    tabPhones.forEach(p => {
+      // モデル名を抽出: "iPhone 17 Pro Max" → "iPhone 17", "Galaxy S25 Ultra" → "Galaxy S25"
+      const match = p.name.match(/^(.+?\s*\d+[\d.]*)/);
+      const series = match ? match[1].trim() : p.name;
+      if (!seriesMap[series]) seriesMap[series] = { name: series, phones: [], rep: p };
+      seriesMap[series].phones.push(p);
+    });
+    return Object.values(seriesMap);
+  }, [tabPhones, activeTab]);
+
+  // モデル選択時のフィルタ済みリスト
+  const filteredTabPhones = useMemo(() => {
+    if (!selectedModel) return tabPhones;
+    return tabPhones.filter(p => {
+      const match = p.name.match(/^(.+?\s*\d+[\d.]*)/);
+      const series = match ? match[1].trim() : p.name;
+      return series === selectedModel;
+    });
+  }, [tabPhones, selectedModel]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -242,7 +267,7 @@ const ShopScreen = () => {
               <button
                 key={tab}
                 className={`cat-tab ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => { setActiveTab(tab); setView('top'); }}
+                onClick={() => { setActiveTab(tab); setSelectedModel(null); setView('top'); }}
               >
                 {tab}
               </button>
@@ -390,17 +415,51 @@ const ShopScreen = () => {
             </>
           )}
 
-          {/* ブランドタブ（Apple・国産など）: 機種一覧を直接表示 */}
+          {/* ブランドタブ（Apple・国産など）: モデル選択 + 機種一覧 */}
           {activeTab !== 'おすすめ' && (
             <>
+              {/* モデルシリーズ選択グリッド */}
+              {modelSeries.length > 0 && (
+                <div className="model-series-grid">
+                  {modelSeries.slice(0, 7).map(s => (
+                    <div
+                      key={s.name}
+                      className={`model-series-item ${selectedModel === s.name ? 'active' : ''}`}
+                      onClick={() => setSelectedModel(selectedModel === s.name ? null : s.name)}
+                    >
+                      <div className="model-series-img">
+                        {s.rep.image
+                          ? <img src={s.rep.image} alt="" className="ms-img" />
+                          : <span style={{ fontSize: 26 }}>📱</span>
+                        }
+                      </div>
+                      <div className="model-series-name">{s.name}</div>
+                    </div>
+                  ))}
+                  {modelSeries.length > 7 && (
+                    <div
+                      className={`model-series-item ${selectedModel === null && false ? 'active' : ''}`}
+                      onClick={() => setSelectedModel(null)}
+                    >
+                      <div className="model-series-img model-series-more">⋯</div>
+                      <div className="model-series-name">全て見る</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 商品一覧 */}
               <div className="shop-section">
                 <div className="sec-hdr">
-                  <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">{activeTab}</span></div>
-                  <span className="sec-more">{tabPhones.length}件</span>
+                  <div className="sec-dot-title">
+                    <div className="sec-dot" />
+                    <span className="sec-title">{selectedModel || activeTab}</span>
+                  </div>
+                  <span className="sec-more">{filteredTabPhones.length}件</span>
                 </div>
-                {tabPhones.length > 0 ? (
+                {filteredTabPhones.length > 0 ? (
                   <div className="product-grid-2">
-                    {tabPhones.map(phone => (
+                    {filteredTabPhones.map(phone => (
                       <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
                         <div className="pc-img-wrap">
                           {phone.image
