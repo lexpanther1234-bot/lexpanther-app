@@ -255,132 +255,177 @@ const ShopScreen = () => {
       {view === 'top' && (
         <div className="shop-scroll">
 
-          {/* カテゴリアイコングリッド */}
-          <div className="icon-grid">
-            {CATEGORY_ICONS.map(c => (
-              <div key={c.label} className="icon-item">
-                <div className="icon-circle" style={{ background: c.color }}>{c.icon}</div>
-                <div className="icon-label">{c.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* バナー */}
-          <div className="banner-row">
-            {newPhones[0] ? (
-              <div className="banner banner-main" onClick={() => openDetail(newPhones[0])}>
-                <span className="banner-tag">NEW</span>
-                <div className="banner-title">{newPhones[0].name}</div>
-                <div className="banner-price">¥{(newPhones[0].price || 0).toLocaleString()}</div>
-              </div>
-            ) : (
-              <div className="banner banner-main">
-                <span className="banner-tag">SHOP</span>
-                <div className="banner-title">海外スマホ<br />専門ストア</div>
-                <div className="banner-price" style={{ fontSize: 11 }}>関税・送料込み</div>
-              </div>
-            )}
-            <div className="banner banner-sub">
-              <div className="banner-sub-txt">信頼の買取</div>
-              <div className="banner-title">スマホ買取<br />ここが確実</div>
-              <div className="banner-link">→ 査定はこちら</div>
-            </div>
-          </div>
-
-          {/* タイムセール */}
-          {salePhones.length > 0 && (
-            <div className="shop-section">
-              <div className="sec-hdr">
-                <span className="sec-title">⏰ タイムセール</span>
-                {saleTimeLeft && <span className="timer-count">{saleTimeLeft}</span>}
-              </div>
-              <div className="h-scroll">
-                {salePhones.map(p => (
-                  <div key={p.id} className="sale-card" onClick={() => openDetail(p)}>
-                    <div className="sale-thumb">{p.image ? <img src={p.image} alt="" className="sale-thumb-img" /> : '📱'}</div>
-                    <div className="sale-name">{p.name}</div>
-                    <div className="sale-price">¥{(p.salePrice || 0).toLocaleString()}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 本日入荷 */}
-          <div className="shop-section">
-            <div className="sec-hdr">
-              <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">本日入荷</span></div>
-              <span className="sec-more">全て見る ›</span>
-            </div>
-            <div className="product-grid-2">
-              {tabPhones.slice(0, 6).map(phone => (
-                <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
-                  <div className="pc-img-wrap">
-                    {phone.image
-                      ? <img src={phone.image} alt="" className="pc-img" />
-                      : <span className="pc-emoji">📱</span>
-                    }
-                    <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
-                      {phone.grade || '新品'}
-                    </span>
-                  </div>
-                  <div className="pc-info">
-                    <div className="pc-name">{phone.name}</div>
-                    <div className="pc-price-row">
-                      <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
-                      <span className="pc-similar">類似 ›</span>
-                    </div>
-                  </div>
+          {/* カテゴリアイコングリッド（おすすめタブのみ） */}
+          {activeTab === 'おすすめ' && (
+            <div className="icon-grid">
+              {CATEGORY_ICONS.map(c => (
+                <div key={c.label} className="icon-item">
+                  <div className="icon-circle" style={{ background: c.color }}>{c.icon}</div>
+                  <div className="icon-label">{c.label}</div>
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* ブランドから探す */}
-          <div className="shop-section">
-            <div className="sec-hdr">
-              <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">ブランドから探す</span></div>
-            </div>
-            <div className="brand-chips-v2">
-              {Object.keys(phonesByBrand).map(brand => (
-                <button
-                  key={brand}
-                  className="brand-chip-v2"
-                  onClick={() => { setSelectedBrand(brand); setView('brand'); }}
-                >
-                  {brand}
-                  <span className="chip-count-v2">{phonesByBrand[brand].length}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* おすすめタブ: バナー・セール・ブランドチップ */}
+          {activeTab === 'おすすめ' && (
+            <>
+              {/* バナー */}
+              <div className="banner-row">
+                {newPhones[0] ? (
+                  <div className="banner banner-main" onClick={() => openDetail(newPhones[0])}>
+                    <span className="banner-tag">NEW</span>
+                    <div className="banner-title">{newPhones[0].name}</div>
+                    <div className="banner-price">¥{(newPhones[0].price || 0).toLocaleString()}</div>
+                  </div>
+                ) : (
+                  <div className="banner banner-main">
+                    <span className="banner-tag">SHOP</span>
+                    <div className="banner-title">海外スマホ<br />専門ストア</div>
+                    <div className="banner-price" style={{ fontSize: 11 }}>関税・送料込み</div>
+                  </div>
+                )}
+                <div className="banner banner-sub">
+                  <div className="banner-sub-txt">信頼の買取</div>
+                  <div className="banner-title">スマホ買取<br />ここが確実</div>
+                  <div className="banner-link">→ 査定はこちら</div>
+                </div>
+              </div>
 
-          {/* もっと見る */}
-          {tabPhones.length > 6 && (
-            <div className="shop-section">
-              <div className="product-grid-2">
-                {tabPhones.slice(6, 20).map(phone => (
-                  <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
-                    <div className="pc-img-wrap">
-                      {phone.image
-                        ? <img src={phone.image} alt="" className="pc-img" />
-                        : <span className="pc-emoji">📱</span>
-                      }
-                      <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
-                        {phone.grade || '新品'}
-                      </span>
-                    </div>
-                    <div className="pc-info">
-                      <div className="pc-name">{phone.name}</div>
-                      <div className="pc-price-row">
-                        <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
-                        <span className="pc-similar">類似 ›</span>
+              {/* タイムセール */}
+              {salePhones.length > 0 && (
+                <div className="shop-section">
+                  <div className="sec-hdr">
+                    <span className="sec-title">⏰ タイムセール</span>
+                    {saleTimeLeft && <span className="timer-count">{saleTimeLeft}</span>}
+                  </div>
+                  <div className="h-scroll">
+                    {salePhones.map(p => (
+                      <div key={p.id} className="sale-card" onClick={() => openDetail(p)}>
+                        <div className="sale-thumb">{p.image ? <img src={p.image} alt="" className="sale-thumb-img" /> : '📱'}</div>
+                        <div className="sale-name">{p.name}</div>
+                        <div className="sale-price">¥{(p.salePrice || 0).toLocaleString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 本日入荷 */}
+              <div className="shop-section">
+                <div className="sec-hdr">
+                  <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">本日入荷</span></div>
+                  <span className="sec-more">全て見る ›</span>
+                </div>
+                <div className="product-grid-2">
+                  {tabPhones.slice(0, 6).map(phone => (
+                    <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
+                      <div className="pc-img-wrap">
+                        {phone.image
+                          ? <img src={phone.image} alt="" className="pc-img" />
+                          : <span className="pc-emoji">📱</span>
+                        }
+                        <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
+                          {phone.grade || '新品'}
+                        </span>
+                      </div>
+                      <div className="pc-info">
+                        <div className="pc-name">{phone.name}</div>
+                        <div className="pc-price-row">
+                          <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
+                          <span className="pc-similar">類似 ›</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+
+              {/* ブランドから探す */}
+              <div className="shop-section">
+                <div className="sec-hdr">
+                  <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">ブランドから探す</span></div>
+                </div>
+                <div className="brand-chips-v2">
+                  {Object.keys(phonesByBrand).map(brand => (
+                    <button
+                      key={brand}
+                      className="brand-chip-v2"
+                      onClick={() => { setSelectedBrand(brand); setView('brand'); }}
+                    >
+                      {brand}
+                      <span className="chip-count-v2">{phonesByBrand[brand].length}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* もっと見る */}
+              {tabPhones.length > 6 && (
+                <div className="shop-section">
+                  <div className="product-grid-2">
+                    {tabPhones.slice(6, 20).map(phone => (
+                      <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
+                        <div className="pc-img-wrap">
+                          {phone.image
+                            ? <img src={phone.image} alt="" className="pc-img" />
+                            : <span className="pc-emoji">📱</span>
+                          }
+                          <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
+                            {phone.grade || '新品'}
+                          </span>
+                        </div>
+                        <div className="pc-info">
+                          <div className="pc-name">{phone.name}</div>
+                          <div className="pc-price-row">
+                            <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
+                            <span className="pc-similar">類似 ›</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ブランドタブ（Apple・国産など）: 機種一覧を直接表示 */}
+          {activeTab !== 'おすすめ' && (
+            <>
+              <div className="shop-section">
+                <div className="sec-hdr">
+                  <div className="sec-dot-title"><div className="sec-dot" /><span className="sec-title">{activeTab}</span></div>
+                  <span className="sec-more">{tabPhones.length}件</span>
+                </div>
+                {tabPhones.length > 0 ? (
+                  <div className="product-grid-2">
+                    {tabPhones.map(phone => (
+                      <div key={phone.id} className="product-card-v2" onClick={() => openDetail(phone)}>
+                        <div className="pc-img-wrap">
+                          {phone.image
+                            ? <img src={phone.image} alt="" className="pc-img" />
+                            : <span className="pc-emoji">📱</span>
+                          }
+                          <span className={`grade-badge ${phone.grade === '新品' ? 'grade-new' : ''}`}>
+                            {phone.grade || '新品'}
+                          </span>
+                        </div>
+                        <div className="pc-info">
+                          <div className="pc-name">{phone.name}</div>
+                          <div className="pc-price-row">
+                            <span className="pc-price">¥{(phone.price || 0).toLocaleString()}</span>
+                            <span className="pc-similar">類似 ›</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-result">該当する商品がありません</p>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
