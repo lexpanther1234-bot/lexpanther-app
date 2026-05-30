@@ -1,36 +1,36 @@
 .repair-screen {
-  background: #0a0a0a;
+  background: #fff;
   min-height: 100vh;
   padding: 20px 16px 60px;
 }
-.repair-title   { color: #00ff88; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.repair-subtitle{ color: #444; font-size: 12px; margin-bottom: 20px; }
+.repair-title   { color: #00aa55; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.repair-subtitle{ color: #999; font-size: 12px; margin-bottom: 20px; }
 
 /* 費用目安 */
 .price-guide-card {
-  background: rgba(0,255,136,0.04);
-  border: 1px solid rgba(0,255,136,0.15);
+  background: rgba(0,170,85,0.03);
+  border: 1px solid rgba(0,170,85,0.15);
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 20px;
 }
-.price-guide-title { color: #00ff88; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+.price-guide-title { color: #00aa55; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
 .price-guide-row {
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid #f0f0f0;
 }
 .price-guide-row:last-child { border-bottom: none; }
-.price-guide-label { color: #777; font-size: 12px; }
-.price-guide-val   { color: #ddd; font-size: 12px; font-weight: 600; }
+.price-guide-label { color: #888; font-size: 12px; }
+.price-guide-val   { color: #333; font-size: 12px; font-weight: 600; }
 
 /* ステップ */
 .repair-step-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #aaa;
+  color: #666;
   font-size: 12px;
   font-weight: 600;
   margin: 16px 0 10px;
@@ -39,9 +39,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(0,255,136,0.12);
-  border: 1px solid rgba(0,255,136,0.3);
-  color: #00ff88;
+  background: rgba(0,170,85,0.08);
+  border: 1px solid rgba(0,170,85,0.25);
+  color: #00aa55;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -52,10 +52,10 @@
 
 /* フォーム要素 */
 .repair-select, .repair-input, .repair-textarea {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
-  color: #ddd;
+  color: #333;
   font-size: 13px;
   padding: 11px 14px;
   width: 100%;
@@ -68,10 +68,10 @@
 /* 症状チェック */
 .symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
 .symptom-chip {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
-  color: #777;
+  color: #888;
   cursor: pointer;
   font-size: 11px;
   padding: 9px 10px;
@@ -79,17 +79,17 @@
   transition: all 0.2s;
 }
 .symptom-chip.selected {
-  background: rgba(0,255,136,0.08);
-  border-color: rgba(0,255,136,0.3);
-  color: #00ff88;
+  background: rgba(0,170,85,0.06);
+  border-color: rgba(0,170,85,0.3);
+  color: #00aa55;
 }
 
 /* 送信ボタン */
 .repair-submit-btn {
-  background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,200,100,0.08));
-  border: 1px solid rgba(0,255,136,0.35);
+  background: linear-gradient(135deg, rgba(0,170,85,0.1), rgba(0,170,85,0.04));
+  border: 1px solid rgba(0,170,85,0.3);
   border-radius: 14px;
-  color: #00ff88;
+  color: #00aa55;
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
@@ -99,7 +99,7 @@
   transition: all 0.2s;
 }
 .repair-submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(0,255,136,0.22), rgba(0,200,100,0.14));
+  background: linear-gradient(135deg, rgba(0,170,85,0.18), rgba(0,170,85,0.08));
 }
 .repair-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -116,7 +116,7 @@
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  border: 1px solid #222;
+  border: 1px solid #e0e0e0;
 }
 .photo-thumb img {
   width: 100%;
@@ -130,8 +130,8 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.7);
-  border: 1px solid #444;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #999;
   color: #ff5050;
   font-size: 10px;
   cursor: pointer;
@@ -143,8 +143,8 @@
   width: 72px;
   height: 72px;
   border-radius: 10px;
-  border: 1.5px dashed #333;
-  background: #111;
+  border: 1.5px dashed #ccc;
+  background: #fafafa;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -154,13 +154,13 @@
   transition: all 0.2s;
 }
 .photo-add-btn:hover {
-  border-color: #00ff88;
-  background: rgba(0,255,136,0.04);
+  border-color: #00aa55;
+  background: rgba(0,170,85,0.03);
 }
 .photo-add-icon { font-size: 20px; }
-.photo-add-text { color: #555; font-size: 9px; }
-.photo-hint { color: #333; font-size: 10px; margin-bottom: 12px; }
-.repair-note { color: #333; font-size: 11px; text-align: center; margin-top: 10px; }
+.photo-add-text { color: #999; font-size: 9px; }
+.photo-hint { color: #ccc; font-size: 10px; margin-bottom: 12px; }
+.repair-note { color: #ccc; font-size: 11px; text-align: center; margin-top: 10px; }
 
 /* 完了画面 */
 .repair-success {
@@ -173,13 +173,13 @@
   text-align: center;
 }
 .success-icon  { font-size: 48px; }
-.success-title { color: #00ff88; font-size: 20px; font-weight: 700; }
-.success-text  { color: #666; font-size: 13px; line-height: 1.7; }
+.success-title { color: #00aa55; font-size: 20px; font-weight: 700; }
+.success-text  { color: #888; font-size: 13px; line-height: 1.7; }
 .success-back {
-  background: rgba(0,255,136,0.1);
-  border: 1px solid rgba(0,255,136,0.3);
+  background: rgba(0,170,85,0.06);
+  border: 1px solid rgba(0,170,85,0.25);
   border-radius: 12px;
-  color: #00ff88;
+  color: #00aa55;
   cursor: pointer;
   font-size: 13px;
   margin-top: 8px;

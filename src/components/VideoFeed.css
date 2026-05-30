@@ -3,7 +3,7 @@
 }
 
 .feed-section-title {
-  color: #00ff88;
+  color: #00aa55;
   font-size: 16px;
   letter-spacing: 2px;
   margin: 0 0 14px;
@@ -13,10 +13,10 @@
 /* ── 検索インプット ── */
 .search-input {
   width: 100%;
-  background: #111111;
-  border: 1px solid #1a2a1a;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 14px;
   padding: 10px 14px;
   outline: none;
@@ -25,11 +25,11 @@
 }
 
 .search-input:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .search-input::placeholder {
-  color: #444444;
+  color: #bbb;
 }
 
 /* ── メーカー・機種セレクト ── */
@@ -43,10 +43,10 @@
 .filter-select {
   flex: 1;
   min-width: 120px;
-  background: #111111;
-  border: 1px solid #1a2a1a;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #cccccc;
+  color: #555;
   font-size: 13px;
   padding: 8px 10px;
   outline: none;
@@ -56,7 +56,7 @@
 }
 
 .filter-select:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .filter-select:disabled {
@@ -65,8 +65,8 @@
 }
 
 .filter-select option {
-  background: #111111;
-  color: #e8e8e8;
+  background: #fff;
+  color: #222;
 }
 
 /* ── タグボタン ── */
@@ -78,53 +78,52 @@
 }
 
 .tag-btn {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.04);
+  color: #00aa55;
   font-size: 11px;
   padding: 4px 12px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   cursor: pointer;
   letter-spacing: 0.5px;
   transition: all 0.15s ease;
 }
 
 .tag-btn:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
 }
 
 .tag-btn.active {
-  background: #00ff88;
-  color: #000000;
-  border-color: #00ff88;
+  background: #00aa55;
+  color: #fff;
+  border-color: #00aa55;
   font-weight: 600;
 }
 
 /* ── 件数・空状態 ── */
 .result-count {
-  color: #444444;
+  color: #999;
   font-size: 12px;
   margin-bottom: 10px;
 }
 
 .result-count span {
-  color: #00cc66;
+  color: #00aa55;
   font-weight: 600;
 }
 
 .no-result {
-  color: #444444;
+  color: #999;
   font-size: 13px;
   text-align: center;
   padding: 40px 0;
 }
 
-/* ── VideoCard本体（VideoCard.cssから移管可） ── */
+/* ── VideoCard本体 ── */
 .video-card {
   display: flex;
-  background: #111111;
-  border: 1px solid #1a2a1a;
+  background: #fff;
+  border: 1px solid #e8e8e8;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -133,14 +132,14 @@
 }
 
 .video-card:hover {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .video-thumb {
   position: relative;
   width: 140px;
   min-width: 140px;
-  background: #1a1a1a;
+  background: #f0f0f0;
 }
 
 .video-thumb img {
@@ -154,7 +153,7 @@
   position: absolute;
   bottom: 5px;
   right: 5px;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.75);
   color: #ffffff;
   font-size: 10px;
   padding: 1px 5px;
@@ -166,8 +165,8 @@
   position: absolute;
   top: 5px;
   left: 5px;
-  background: #00ff88;
-  color: #000000;
+  background: #00aa55;
+  color: #fff;
   font-size: 9px;
   font-weight: 700;
   padding: 2px 6px;
@@ -184,7 +183,7 @@
 }
 
 .video-title {
-  color: #e8e8e8;
+  color: #222;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
@@ -203,23 +202,23 @@
 }
 
 .video-channel {
-  color: #00cc66;
+  color: #00aa55;
   font-size: 11px;
   font-weight: 500;
 }
 
 .video-dot {
-  color: #333333;
+  color: #ddd;
   font-size: 10px;
 }
 
 .video-views {
-  color: #555555;
+  color: #999;
   font-size: 11px;
 }
 
 .video-time {
-  color: #444444;
+  color: #bbb;
   font-size: 11px;
   margin-left: auto;
 }
@@ -238,23 +237,23 @@
 
 .video-tag {
   display: inline-block;
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.04);
+  color: #00aa55;
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   letter-spacing: 0.5px;
 }
 
 .video-maker-tag {
   display: inline-block;
-  background: #1a1500;
+  background: #fff8e0;
   color: #aa8800;
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 20px;
-  border: 1px solid #2a2000;
+  border: 1px solid #ffe088;
   letter-spacing: 0.5px;
 }
 /* ── 動画プレイヤー ── */
@@ -273,7 +272,7 @@
 
 .video-player-area {
   background: #000;
-  border: 1px solid #00ff88;
+  border: 1px solid #00aa55;
   border-top: none;
   border-radius: 0 0 10px 10px;
   overflow: hidden;
@@ -297,7 +296,7 @@
   display: flex;
   gap: 8px;
   padding: 10px;
-  background: #0a0a0a;
+  background: #f5f5f5;
 }
 
 .btn-brave {
@@ -319,19 +318,19 @@
 
 .btn-youtube {
   flex: 1;
-  background: #111;
-  color: #ccc;
+  background: #fff;
+  color: #555;
   font-size: 11px;
   padding: 8px 0;
   border-radius: 8px;
-  border: 1px solid #1a2a1a;
+  border: 1px solid #e0e0e0;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .btn-youtube:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
+  color: #00aa55;
 }
 
 /* ── プラットフォームタブ ── */
@@ -341,10 +340,10 @@
   margin-bottom: 12px;
 }
 .platform-tab {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 20px;
-  color: #aaa;
+  color: #888;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -352,13 +351,13 @@
   transition: all 0.2s;
 }
 .platform-tab:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
+  color: #00aa55;
 }
 .platform-tab.active {
-  background: rgba(0,255,136,0.12);
-  border-color: #00ff88;
-  color: #00ff88;
+  background: rgba(0,170,85,0.08);
+  border-color: #00aa55;
+  color: #00aa55;
 }
 
 /* ── ブランドフィルタータブ ── */
@@ -375,25 +374,24 @@
   display: none;
 }
 .brand-tab {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.04);
+  color: #00aa55;
   font-size: 11px;
   padding: 5px 14px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
 .brand-tab:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
 }
 .brand-tab.active {
-  background: #00ff88;
-  color: #000;
-  border-color: #00ff88;
+  background: #00aa55;
+  color: #fff;
+  border-color: #00aa55;
   font-weight: 600;
 }
 
@@ -406,8 +404,8 @@
 .bilibili-card {
   display: flex;
   gap: 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #fff;
+  border: 1px solid #e8e8e8;
   border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
@@ -415,7 +413,7 @@
   transition: border-color 0.2s;
 }
 .bilibili-card:hover {
-  border-color: rgba(0,160,220,0.5);
+  border-color: rgba(0,160,220,0.4);
 }
 .bilibili-thumb {
   width: 140px;
@@ -432,7 +430,7 @@
   min-width: 0;
 }
 .bilibili-title {
-  color: #ddd;
+  color: #333;
   font-size: 13px;
   line-height: 1.5;
   display: -webkit-box;
@@ -443,30 +441,30 @@
 .bilibili-meta {
   display: flex;
   gap: 12px;
-  color: #555;
+  color: #999;
   font-size: 11px;
 }
 
 /* エラーカード */
 .feed-error-card {
   background: rgba(255, 180, 0, 0.04);
-  border: 1px solid rgba(255, 180, 0, 0.15);
+  border: 1px solid rgba(255, 180, 0, 0.2);
   border-radius: 14px;
   padding: 32px 20px;
   text-align: center;
   margin: 20px 0;
 }
 .feed-error-icon { font-size: 36px; margin-bottom: 10px; }
-.feed-error-title { color: #ffb400; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-.feed-error-text { color: #777; font-size: 12px; line-height: 1.7; margin-bottom: 16px; }
+.feed-error-title { color: #cc8800; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.feed-error-text { color: #888; font-size: 12px; line-height: 1.7; margin-bottom: 16px; }
 .feed-error-retry {
-  background: rgba(255, 180, 0, 0.1);
-  border: 1px solid rgba(255, 180, 0, 0.3);
+  background: rgba(255, 180, 0, 0.08);
+  border: 1px solid rgba(255, 180, 0, 0.25);
   border-radius: 10px;
-  color: #ffb400;
+  color: #cc8800;
   cursor: pointer;
   font-size: 13px;
   padding: 10px 24px;
   transition: all 0.2s;
 }
-.feed-error-retry:hover { background: rgba(255, 180, 0, 0.18); }
+.feed-error-retry:hover { background: rgba(255, 180, 0, 0.15); }

@@ -11,15 +11,15 @@
 
 .community-title {
   font-family: 'Rajdhani', sans-serif;
-  color: #00ff88;
+  color: #00aa55;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 2px;
 }
 
 .new-post-btn {
-  background: #00ff88;
-  color: #000;
+  background: #00aa55;
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   padding: 6px 14px;
@@ -37,10 +37,10 @@
 /* ── 検索 ── */
 .community-search {
   width: 100%;
-  background: #111;
-  border: 1px solid #1a2a1a;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 13px;
   padding: 9px 12px;
   outline: none;
@@ -49,11 +49,11 @@
 }
 
 .community-search:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .community-search::placeholder {
-  color: #444;
+  color: #bbb;
 }
 
 /* ── タグ ── */
@@ -65,33 +65,32 @@
 }
 
 .tag-btn {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.04);
+  color: #00aa55;
   font-size: 11px;
   padding: 4px 12px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   cursor: pointer;
   letter-spacing: 0.5px;
   transition: all 0.15s ease;
 }
 
 .tag-btn:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
 }
 
 .tag-btn.active {
-  background: #00ff88;
-  color: #000;
-  border-color: #00ff88;
+  background: #00aa55;
+  color: #fff;
+  border-color: #00aa55;
   font-weight: 700;
 }
 
 /* ── 投稿カード ── */
 .post-card {
-  background: #111;
-  border: 1px solid #1a2a1a;
+  background: #fff;
+  border: 1px solid #e8e8e8;
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 10px;
@@ -99,7 +98,7 @@
 }
 
 .post-card:hover {
-  border-color: #1a3a1a;
+  border-color: #ccc;
 }
 
 .post-header {
@@ -113,14 +112,14 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1a2a1a;
-  border: 1px solid #1a3a1a;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #00cc66;
+  color: #00aa55;
   flex-shrink: 0;
 }
 
@@ -131,29 +130,29 @@
 .post-username {
   font-size: 13px;
   font-weight: 500;
-  color: #e8e8e8;
+  color: #222;
 }
 
 .post-time {
   font-size: 10px;
-  color: #444;
+  color: #bbb;
   margin-top: 1px;
 }
 
 .post-tag-pill {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.06);
+  color: #00aa55;
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 
 .post-body {
   font-size: 13px;
-  color: #ccc;
+  color: #444;
   line-height: 1.6;
   margin-bottom: 10px;
 }
@@ -161,7 +160,7 @@
 .post-image {
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #1a2a1a;
+  border: 1px solid #e8e8e8;
   margin-bottom: 10px;
   display: block;
 }
@@ -175,7 +174,7 @@
 .action-btn {
   background: none;
   border: none;
-  color: #555;
+  color: #999;
   font-size: 12px;
   cursor: pointer;
   display: flex;
@@ -187,7 +186,7 @@
 }
 
 .action-btn:hover {
-  color: #00cc66;
+  color: #00aa55;
 }
 
 .action-btn.liked {
@@ -197,7 +196,7 @@
 /* ── コメント ── */
 .comment-area {
   margin-top: 10px;
-  border-top: 1px solid #1a2a1a;
+  border-top: 1px solid #f0f0f0;
   padding-top: 10px;
 }
 
@@ -211,18 +210,18 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #1a2a1a;
+  background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
   font-weight: 700;
-  color: #00cc66;
+  color: #00aa55;
   flex-shrink: 0;
 }
 
 .comment-bubble {
-  background: #0d0d0d;
+  background: #f8f8f8;
   border-radius: 8px;
   padding: 6px 10px;
   flex: 1;
@@ -230,14 +229,14 @@
 
 .comment-username {
   font-size: 10px;
-  color: #00cc66;
+  color: #00aa55;
   margin-bottom: 2px;
   font-weight: 500;
 }
 
 .comment-body {
   font-size: 12px;
-  color: #aaa;
+  color: #555;
   line-height: 1.4;
 }
 
@@ -249,10 +248,10 @@
 
 .comment-input {
   flex: 1;
-  background: #0d0d0d;
-  border: 1px solid #1a2a1a;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 12px;
   padding: 7px 10px;
   outline: none;
@@ -260,16 +259,16 @@
 }
 
 .comment-input:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .comment-input::placeholder {
-  color: #444;
+  color: #bbb;
 }
 
 .comment-send-btn {
-  background: #00ff88;
-  color: #000;
+  background: #00aa55;
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   padding: 7px 12px;
@@ -287,14 +286,14 @@
 
 /* ── 空状態 ── */
 .no-result {
-  color: #444;
+  color: #999;
   font-size: 13px;
   text-align: center;
   padding: 40px 0;
 }
 
 .loading-comments {
-  color: #444;
+  color: #999;
   font-size: 12px;
   text-align: center;
   padding: 8px 0;
@@ -302,8 +301,8 @@
 
 /* ── ログインバナー ── */
 .login-banner {
-  background: #0d1f0d;
-  border: 1px solid #1a3a1a;
+  background: rgba(0,170,85,0.04);
+  border: 1px solid rgba(0,170,85,0.15);
   border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 14px;
@@ -321,8 +320,8 @@
 }
 
 .login-banner-btn {
-  background: #00ff88;
-  color: #000;
+  background: #00aa55;
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   padding: 6px 12px;
@@ -338,7 +337,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -347,8 +346,8 @@
 }
 
 .modal-card {
-  background: #111;
-  border: 1px solid #1a3a1a;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 14px;
   padding: 20px;
   width: 100%;
@@ -357,7 +356,7 @@
 
 .modal-title {
   font-family: 'Rajdhani', sans-serif;
-  color: #00ff88;
+  color: #00aa55;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -366,7 +365,7 @@
 
 .modal-body-text {
   font-size: 13px;
-  color: #aaa;
+  color: #666;
   line-height: 1.5;
   margin-bottom: 16px;
 }
@@ -380,10 +379,10 @@
 
 .modal-textarea {
   width: 100%;
-  background: #0d0d0d;
-  border: 1px solid #1a2a1a;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 13px;
   padding: 10px 12px;
   outline: none;
@@ -395,11 +394,11 @@
 }
 
 .modal-textarea:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .modal-textarea::placeholder {
-  color: #444;
+  color: #bbb;
 }
 
 .modal-actions {
@@ -410,9 +409,9 @@
 
 .modal-cancel-btn {
   background: none;
-  border: 1px solid #333;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  color: #666;
+  color: #888;
   font-size: 12px;
   padding: 8px 16px;
   cursor: pointer;
@@ -420,8 +419,8 @@
 }
 
 .modal-submit-btn {
-  background: #00ff88;
-  color: #000;
+  background: #00aa55;
+  color: #fff;
   font-size: 12px;
   font-weight: 700;
   padding: 8px 18px;
@@ -452,12 +451,12 @@
 }
 
 .source-filter-btn {
-  background: #0d0d0d;
-  color: #666;
+  background: #f5f5f5;
+  color: #888;
   font-size: 11px;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid #222;
+  border: 1px solid #e0e0e0;
   cursor: pointer;
   white-space: nowrap;
   letter-spacing: 0.5px;
@@ -466,19 +465,19 @@
 }
 
 .source-filter-btn:hover {
-  border-color: #444;
-  color: #aaa;
+  border-color: #ccc;
+  color: #666;
 }
 
 .source-filter-btn.active {
-  background: #1a1a1a;
-  color: #e8e8e8;
-  border-color: #555;
+  background: #f0f0f0;
+  color: #222;
+  border-color: #bbb;
   font-weight: 600;
 }
 
 .loading-dot {
-  color: #444;
+  color: #bbb;
   font-size: 10px;
 }
 
@@ -493,21 +492,21 @@
 }
 
 .source-badge--user {
-  background: #0d2e0d;
-  color: #00cc66;
-  border: 1px solid #1a4a1a;
+  background: #e8f5ee;
+  color: #008844;
+  border: 1px solid #b8e0c8;
 }
 
 .source-badge--reddit {
-  background: #2e1a0d;
+  background: #fff0e8;
   color: #ff6314;
-  border: 1px solid #4a2a10;
+  border: 1px solid #ffd0b8;
 }
 
 .source-badge--youtube {
-  background: #2e0d0d;
+  background: #ffe8e8;
   color: #ff4040;
-  border: 1px solid #4a1010;
+  border: 1px solid #ffb8b8;
 }
 
 .post-badges {
@@ -534,7 +533,7 @@
 .external-title {
   font-size: 13px;
   font-weight: 600;
-  color: #e8e8e8;
+  color: #222;
   line-height: 1.4;
   margin-bottom: 6px;
 }
@@ -553,23 +552,23 @@
 
 .action-count {
   font-size: 12px;
-  color: #555;
+  color: #888;
 }
 
 .translate-btn {
   font-size: 11px;
-  color: #4a9eff;
+  color: #3388dd;
   background: none;
   cursor: pointer;
   padding: 3px 8px;
-  border: 1px solid #1a2a3a;
+  border: 1px solid #cce0f0;
   border-radius: 6px;
   transition: border-color 0.15s;
   font-family: 'Noto Sans JP', sans-serif;
 }
 
 .translate-btn:hover:not(:disabled) {
-  border-color: #4a9eff;
+  border-color: #3388dd;
 }
 
 .translate-btn:disabled,
@@ -581,11 +580,11 @@
 /* ── 翻訳ボックス ── */
 .translation-loading {
   font-size: 12px;
-  color: #4a9eff;
+  color: #3388dd;
   margin: 8px 0;
   padding: 8px 12px;
-  background: #0d1a2e;
-  border: 1px solid #1a2a3a;
+  background: #f0f5ff;
+  border: 1px solid #d0e0f0;
   border-radius: 8px;
   animation: pulse 1.2s ease-in-out infinite;
 }
@@ -598,15 +597,15 @@
 .translation-box {
   margin: 8px 0;
   padding: 10px 12px;
-  background: #0d1a2e;
-  border: 1px solid #1a3a5a;
-  border-left: 3px solid #4a9eff;
+  background: #f0f5ff;
+  border: 1px solid #c0d8f0;
+  border-left: 3px solid #3388dd;
   border-radius: 8px;
 }
 
 .translation-label {
   font-size: 10px;
-  color: #4a9eff;
+  color: #3388dd;
   font-weight: 700;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
@@ -614,24 +613,24 @@
 
 .translation-text {
   font-size: 13px;
-  color: #ccc;
+  color: #333;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
 .external-link-btn {
   font-size: 11px;
-  color: #00cc66;
+  color: #00aa55;
   text-decoration: none;
   padding: 3px 8px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   border-radius: 6px;
   transition: border-color 0.15s;
   margin-left: auto;
 }
 
 .external-link-btn:hover {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 /* ── 投稿タイプ選択 ── */
@@ -643,10 +642,10 @@
 
 .post-type-btn {
   flex: 1;
-  background: #0d0d0d;
-  border: 1px solid #222;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #666;
+  color: #888;
   font-size: 11px;
   padding: 7px 4px;
   cursor: pointer;
@@ -656,14 +655,14 @@
 }
 
 .post-type-btn:hover {
-  border-color: #444;
-  color: #aaa;
+  border-color: #ccc;
+  color: #666;
 }
 
 .post-type-btn.active {
-  background: #1a2a1a;
-  border-color: #00ff88;
-  color: #00ff88;
+  background: rgba(0,170,85,0.06);
+  border-color: #00aa55;
+  color: #00aa55;
   font-weight: 600;
 }
 
@@ -679,21 +678,21 @@
 }
 
 .badge-question {
-  background: #1a1a2e;
-  color: #7b8cff;
-  border: 1px solid #2a2a4a;
+  background: #eeeef8;
+  color: #6672cc;
+  border: 1px solid #ccccee;
 }
 
 .badge-purchase {
-  background: #1a2e1a;
-  color: #66cc66;
-  border: 1px solid #2a4a2a;
+  background: #e8f5ee;
+  color: #44aa44;
+  border: 1px solid #b8e0b8;
 }
 
 .badge-sale {
-  background: #2e1a0d;
-  color: #ffaa44;
-  border: 1px solid #4a2a10;
+  background: #fff5e8;
+  color: #cc8800;
+  border: 1px solid #ffe0b0;
 }
 
 /* ── 投稿タイプ左ボーダー ── */
@@ -716,24 +715,24 @@
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
-  background: #0d1a0d;
-  border: 1px solid #1a3a1a;
+  background: #f0f8f0;
+  border: 1px solid #d0e8d0;
   border-radius: 8px;
   margin-bottom: 10px;
   font-size: 12px;
 }
 
 .purchase-phone {
-  color: #66cc66;
+  color: #44aa44;
   font-weight: 600;
 }
 
 .purchase-place {
-  color: #aaa;
+  color: #666;
 }
 
 .purchase-price {
-  color: #00ff88;
+  color: #00aa55;
   font-weight: 700;
   margin-left: auto;
 }
@@ -745,15 +744,15 @@
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
-  background: #1a150d;
-  border: 1px solid #3a2a10;
+  background: #fff8f0;
+  border: 1px solid #ffe0c0;
   border-radius: 8px;
   margin-bottom: 10px;
   font-size: 12px;
 }
 
 .sale-phone {
-  color: #ffaa44;
+  color: #cc8800;
   font-weight: 600;
 }
 
@@ -768,18 +767,18 @@
 }
 
 .sale-link {
-  color: #ffaa44;
+  color: #cc8800;
   text-decoration: none;
   font-size: 11px;
   padding: 2px 8px;
-  border: 1px solid #3a2a10;
+  border: 1px solid #ffe0c0;
   border-radius: 6px;
   margin-left: auto;
   transition: border-color 0.15s;
 }
 
 .sale-link:hover {
-  border-color: #ffaa44;
+  border-color: #cc8800;
 }
 
 /* ── タグ入力 ── */
@@ -789,10 +788,10 @@
 
 .tag-input {
   width: 100%;
-  background: #0d0d0d;
-  border: 1px solid #1a2a1a;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
@@ -801,11 +800,11 @@
 }
 
 .tag-input:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .tag-input::placeholder {
-  color: #444;
+  color: #bbb;
 }
 
 .tag-list {
@@ -816,12 +815,12 @@
 }
 
 .tag-badge {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.06);
+  color: #00aa55;
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -846,33 +845,32 @@
 }
 
 .post-tag-btn {
-  background: #0d1f0d;
-  color: #00cc66;
+  background: rgba(0,170,85,0.04);
+  color: #00aa55;
   font-size: 10px;
   padding: 2px 10px;
   border-radius: 20px;
-  border: 1px solid #1a3a1a;
+  border: 1px solid rgba(0,170,85,0.2);
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: 'Noto Sans JP', sans-serif;
 }
 
 .post-tag-btn:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #00aa55;
 }
 
 .post-tag-btn.active {
-  background: #00ff88;
-  color: #000;
-  border-color: #00ff88;
+  background: #00aa55;
+  color: #fff;
+  border-color: #00aa55;
   font-weight: 700;
 }
 
 /* ── AI回答カード ── */
 .ai-answer-card {
-  background: #0d0d1a;
-  border: 1px solid #2a2a4a;
+  background: #f0f0f8;
+  border: 1px solid #d0d0e8;
   border-left: 3px solid #7b8cff;
   border-radius: 8px;
   padding: 10px 12px;
@@ -889,7 +887,7 @@
 
 .ai-answer-text {
   font-size: 12px;
-  color: #ccc;
+  color: #444;
   line-height: 1.6;
   margin: 0;
 }
@@ -898,8 +896,8 @@
   font-size: 11px;
   color: #7b8cff;
   padding: 8px 12px;
-  background: #0d0d1a;
-  border: 1px solid #2a2a4a;
+  background: #f0f0f8;
+  border: 1px solid #d0d0e8;
   border-radius: 8px;
   margin-bottom: 10px;
   animation: pulse 1.2s ease-in-out infinite;
@@ -911,9 +909,9 @@
   color: #7b8cff;
   margin: 0 0 10px;
   padding: 6px 10px;
-  background: #0d0d1a;
+  background: #f0f0f8;
   border-radius: 6px;
-  border: 1px solid #2a2a4a;
+  border: 1px solid #d0d0e8;
 }
 
 .form-extra-fields {
@@ -925,10 +923,10 @@
 
 .form-input {
   width: 100%;
-  background: #0d0d0d;
-  border: 1px solid #1a2a1a;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
@@ -937,19 +935,19 @@
 }
 
 .form-input:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 .form-input::placeholder {
-  color: #444;
+  color: #bbb;
 }
 
 .form-select {
   width: 100%;
-  background: #0d0d0d;
-  border: 1px solid #1a2a1a;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #e8e8e8;
+  color: #222;
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
@@ -958,13 +956,13 @@
   margin-bottom: 10px;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2300cc66' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2300aa55' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
 
 .form-select:focus {
-  border-color: #00ff88;
+  border-color: #00aa55;
 }
 
 /* ── アクティブタグバー ── */
@@ -973,17 +971,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  background: #0d1f0d;
-  border: 1px solid #1a3a1a;
+  background: rgba(0,170,85,0.04);
+  border: 1px solid rgba(0,170,85,0.15);
   border-radius: 8px;
   margin-bottom: 12px;
   font-size: 12px;
-  color: #00cc66;
+  color: #00aa55;
 }
 
 .clear-tag-btn {
   background: none;
-  border: 1px solid #1a3a1a;
+  border: 1px solid #ddd;
   border-radius: 6px;
   color: #888;
   font-size: 11px;

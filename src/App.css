@@ -5,7 +5,7 @@
 }
 
 body {
-  background: #1a1a1a;
+  background: #f0f0f0;
   display: flex;
   justify-content: center;
   font-family: 'Noto Sans JP', sans-serif;
@@ -13,18 +13,18 @@ body {
 }
 
 .App {
-  background: #0a0a0a;
+  background: #ffffff;
   width: 390px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 0 40px rgba(0, 255, 136, 0.05);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
 }
 
 .app-header {
-  background: #0a0a0a;
-  border-bottom: 1px solid #1a2a1a;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
   padding: 14px 16px;
   position: sticky;
   top: 0;
@@ -44,11 +44,11 @@ body {
   align-items: center;
   gap: 6px;
   background: none;
-  border: 1px solid #00ff88;
+  border: 1px solid #00aa55;
   border-radius: 20px;
   padding: 4px 10px;
   cursor: pointer;
-  color: #00ff88;
+  color: #00aa55;
 }
 
 .auth-avatar {
@@ -62,8 +62,8 @@ body {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #00ff88;
-  color: #0a0a0a;
+  background: #00aa55;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,20 +74,20 @@ body {
 .auth-label {
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 11px;
-  color: #00ff88;
+  color: #00aa55;
   white-space: nowrap;
 }
 
 .app-logo {
   font-family: 'Rajdhani', sans-serif;
-  color: #00ff88;
+  color: #00aa55;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 3px;
 }
 
 .logo-white {
-  color: #ffffff;
+  color: #222;
 }
 
 .app-content {
@@ -99,8 +99,8 @@ body {
 
 .tab-bar {
   display: flex;
-  background: #0a0a0a;
-  border-top: 1px solid #1a2a1a;
+  background: #ffffff;
+  border-top: 1px solid #e8e8e8;
   padding: 8px 0 4px;
   position: fixed;
   bottom: 0;
@@ -129,7 +129,7 @@ body {
 .tab-label {
   font-family: 'Rajdhani', sans-serif;
   font-size: 10px;
-  color: #444;
+  color: #999;
   letter-spacing: 1px;
   transition: color 0.15s;
 }
@@ -139,5 +139,5 @@ body {
 }
 
 .tab.active .tab-label {
-  color: #00ff88;
+  color: #00aa55;
 }
