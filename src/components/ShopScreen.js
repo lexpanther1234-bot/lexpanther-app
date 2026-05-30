@@ -46,7 +46,6 @@ const ShopScreen = () => {
   const [sidebarCategory, setSidebarCategory] = useState('Apple');
   const [searchQuery, setSearchQuery] = useState('');
   const [saleTimeLeft, setSaleTimeLeft] = useState('');
-  const [selectedModel, setSelectedModel] = useState(null);
   const [showAllList, setShowAllList] = useState(false);
 
   // Firestore phones購読
@@ -130,12 +129,6 @@ const ShopScreen = () => {
     if (activeTab === 'タブレット') return phones.filter(p => p.category === 'tablet');
     return phones;
   }, [phones, activeTab]);
-
-  // モデル選択時のフィルタ済みリスト
-  const filteredTabPhones = useMemo(() => {
-    if (!selectedModel) return tabPhones;
-    return tabPhones.filter(p => p.id === selectedModel);
-  }, [tabPhones, selectedModel]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -251,7 +244,7 @@ const ShopScreen = () => {
               <button
                 key={tab}
                 className={`cat-tab ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => { setActiveTab(tab); setSelectedModel(null); setShowAllList(false); setView('top'); }}
+                onClick={() => { setActiveTab(tab); setShowAllList(false); setView('top'); }}
               >
                 {tab}
               </button>
