@@ -80,61 +80,44 @@
 .model-select-more { width:50px; height:50px; background:#eee; border-radius:10px; margin:0 auto 4px; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:16px; }
 .model-select-name { color:#666; font-size:8px; line-height:1.3; }
 
-/* ── モデルシリーズ選択グリッド（タブ内） ── */
-.model-series-grid {
+/* ── 機種選択グリッド（3列・タブ内） ── */
+.model-pick-grid {
   display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px 6px;
-  background:#f8f8f8;
-  border:1px solid #eee;
-  border-radius:14px;
-  padding:14px 10px;
-  margin-bottom:16px;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px 8px;
+  padding:4px 0 16px;
 }
-.model-series-item {
+.model-pick-item {
   text-align:center;
   cursor:pointer;
-  transition:all 0.15s;
+  transition:opacity 0.15s;
 }
-.model-series-item.active .model-series-img {
-  border-color:#00aa55;
-  box-shadow:0 0 0 2px rgba(0,170,85,0.15);
-}
-.model-series-item.active .model-series-name {
-  color:#00aa55;
-  font-weight:700;
-}
-.model-series-img {
-  width:60px;
-  height:60px;
-  background:#fff;
-  border:1.5px solid #e8e8e8;
-  border-radius:12px;
-  margin:0 auto 5px;
+.model-pick-item:active { opacity:0.7; }
+.model-pick-img {
+  width:80px;
+  height:80px;
+  background:#f8f8f8;
+  border-radius:14px;
+  margin:0 auto 6px;
   display:flex;
   align-items:center;
   justify-content:center;
   overflow:hidden;
-  transition:border-color 0.15s, box-shadow 0.15s;
 }
-.model-series-img .ms-img {
+.model-pick-photo {
   width:100%;
   height:100%;
   object-fit:contain;
-  padding:4px;
+  padding:6px;
 }
-.model-series-more {
-  color:#bbb;
-  font-size:18px;
-  background:#f0f0f0 !important;
-  border-color:#e0e0e0 !important;
+.model-pick-all {
+  background:#f0f0f0;
 }
-.model-series-name {
-  color:#555;
-  font-size:9px;
-  line-height:1.3;
+.model-pick-name {
+  color:#333;
+  font-size:11px;
+  line-height:1.35;
   font-weight:500;
-  transition:color 0.15s;
 }
 
 /* ── 検索レイアウト ──────────────── */
